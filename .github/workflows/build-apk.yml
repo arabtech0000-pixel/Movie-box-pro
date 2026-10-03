@@ -43,24 +43,32 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
+          accept-android-sdk-licenses: true
           cmdline-tools-version: latest
 
-      - name: Initialize Capacitor Android Platform
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | sdkmanager --licenses || true
+
+      - name: Initialize and Sync Capacitor Android
         run: |
           npx cap add android || true
-          npx cap sync android || true
+          npx cap sync android
+          if [ -d "android" ]; then
+            echo "sdk.dir=${ANDROID_HOME:-/usr/local/lib/android/sdk}" > android/local.properties
+            chmod +x android/gradlew
+          fi
 
       - name: Build Android APK
         run: |
           if [ -d "android" ]; then
             cd android
-            chmod +x ./gradlew
-            ./gradlew assembleDebug --no-daemon
+            ./gradlew assembleDebug --no-daemon --stacktrace
           fi
 
       - name: Upload Built APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: MovieBoxPro-Android-APK
-          path: android/app/build/outputs/apk/**/app-*.apk
+          path: android/app/build/outputs/apk/**/*.apk
           if-no-files-found: warn
