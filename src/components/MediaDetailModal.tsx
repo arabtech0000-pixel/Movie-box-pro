@@ -195,19 +195,17 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
   useEffect(() => {
     if (!item.videos || item.videos.length === 0) {
       const targetId = item.tmdbId || item.id;
-      if (targetId) {
-        getMediaVideos(targetId, item.type)
-          .then((vids) => {
-            if (vids && vids.length > 0) {
-              setItem((prev) => ({ ...prev, videos: vids }));
-            }
-          })
-          .catch((err) => {
-            console.warn('Could not fetch extra videos:', err);
-          });
-      }
+      getMediaVideos(targetId, item.type, item.title)
+        .then((vids) => {
+          if (vids && vids.length > 0) {
+            setItem((prev) => ({ ...prev, videos: vids }));
+          }
+        })
+        .catch((err) => {
+          console.warn('Could not fetch extra videos:', err);
+        });
     }
-  }, [item.id, item.tmdbId, item.type, item.videos]);
+  }, [item.id, item.tmdbId, item.type, item.title, item.videos]);
 
   // Fetch "Others You Can Watch" fallback/supplementary data
   useEffect(() => {

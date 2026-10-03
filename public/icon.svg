@@ -1,31 +1,96 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a"/>
-      <stop offset="50%" stop-color="#090a0f"/>
-      <stop offset="100%" stop-color="#052e16"/>
+    <!-- Card drop shadow -->
+    <filter id="iconShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.18"/>
+    </filter>
+
+    <!-- Bottom blue wave gradient -->
+    <linearGradient id="blueWave" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00b4d8"/>
+      <stop offset="35%" stop-color="#0077b6"/>
+      <stop offset="100%" stop-color="#023e8a"/>
     </linearGradient>
-    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00df82"/>
-      <stop offset="100%" stop-color="#00b464"/>
+
+    <!-- Green wave accent -->
+    <linearGradient id="greenWave" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#80ed99" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#57cc99" stop-opacity="0.9"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#00df82" flood-opacity="0.3"/>
+
+    <!-- Play button 3D gradient -->
+    <linearGradient id="playGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5d4"/>
+      <stop offset="40%" stop-color="#00bbf9"/>
+      <stop offset="100%" stop-color="#2a6fdb"/>
+    </linearGradient>
+
+    <!-- Film strip side gradient -->
+    <linearGradient id="filmGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00bbf9"/>
+      <stop offset="100%" stop-color="#00f5d4"/>
+    </linearGradient>
+
+    <!-- Download green arrow gradient -->
+    <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#52b788"/>
+      <stop offset="50%" stop-color="#2d6a4f"/>
+      <stop offset="100%" stop-color="#25a244"/>
+    </linearGradient>
+
+    <!-- Arrow 3D light gradient -->
+    <linearGradient id="arrowLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#74c69d"/>
+      <stop offset="100%" stop-color="#40916c"/>
+    </linearGradient>
+
+    <filter id="logoShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#004e89" flood-opacity="0.25"/>
     </filter>
   </defs>
-  <!-- Background -->
-  <rect width="512" height="512" rx="120" fill="url(#bgGrad)"/>
-  <rect width="504" height="504" x="4" y="4" rx="116" fill="none" stroke="url(#accentGrad)" stroke-width="4" stroke-opacity="0.3"/>
-  
-  <!-- Movie Play Badge -->
-  <g filter="url(#shadow)">
-    <circle cx="256" cy="256" r="140" fill="#121422" stroke="url(#accentGrad)" stroke-width="6"/>
-    <path d="M210 170 L340 256 L210 342 Z" fill="url(#accentGrad)"/>
+
+  <!-- Base White Rounded Squircle Card -->
+  <rect width="496" height="496" x="8" y="8" rx="100" fill="#ffffff" filter="url(#iconShadow)"/>
+
+  <!-- Subtle Green Wave -->
+  <path d="M 8 300 Q 140 270 256 310 T 504 290 L 504 504 L 8 504 Z" fill="url(#greenWave)" clip-path="url(#cardClip)"/>
+
+  <!-- Clip Path to maintain smooth rounded corners -->
+  <clipPath id="cardClip">
+    <rect width="496" height="496" x="8" y="8" rx="100"/>
+  </clipPath>
+
+  <!-- Blue Wave Container Layer -->
+  <g clip-path="url(#cardClip)">
+    <!-- Greenish curve line -->
+    <path d="M 8 320 C 120 280, 360 360, 504 310 L 504 504 L 8 504 Z" fill="url(#greenWave)"/>
+    <!-- Deep Vibrant Blue Base Wave -->
+    <path d="M 8 340 C 130 310, 350 370, 504 330 L 504 504 L 8 504 Z" fill="url(#blueWave)"/>
   </g>
-  
-  <!-- Film Roll Accents -->
-  <circle cx="160" cy="130" r="12" fill="#00df82" opacity="0.8"/>
-  <circle cx="352" cy="130" r="12" fill="#00df82" opacity="0.8"/>
-  <circle cx="160" cy="382" r="12" fill="#00df82" opacity="0.8"/>
-  <circle cx="352" cy="382" r="12" fill="#00df82" opacity="0.8"/>
+
+  <!-- Central Play & Download Reel Logo -->
+  <g filter="url(#logoShadow)" transform="translate(256, 175)">
+    <!-- Outer Play Triangle (3D Folded Blue/Teal) -->
+    <path d="M -90 -100 L 110 0 L -90 100 Z" fill="url(#playGrad)" stroke="#ffffff" stroke-width="6" stroke-linejoin="round"/>
+
+    <!-- Left Film Strip Edge with Perforations -->
+    <path d="M -90 -100 L -40 -100 L -40 100 L -90 100 Z" fill="url(#filmGrad)" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>
+    
+    <!-- Film Perforation Dots -->
+    <rect x="-72" y="-80" width="12" height="18" rx="4" fill="#003566" opacity="0.8"/>
+    <rect x="-72" y="-45" width="12" height="18" rx="4" fill="#003566" opacity="0.8"/>
+    <rect x="-72" y="-10" width="12" height="18" rx="4" fill="#003566" opacity="0.8"/>
+    <rect x="-72" y="25" width="12" height="18" rx="4" fill="#003566" opacity="0.8"/>
+    <rect x="-72" y="60" width="12" height="18" rx="4" fill="#003566" opacity="0.8"/>
+
+    <!-- Download Arrow Shape (Prominent Green 3D Center) -->
+    <path d="M -30 -60 L 30 -60 L 30 10 L 65 10 L 0 85 L -65 10 L -30 10 Z" fill="url(#arrowLight)" stroke="#ffffff" stroke-width="6" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Text "Free Movie" in clean bold white on the blue background -->
+  <g clip-path="url(#cardClip)">
+    <text x="256" y="440" text-anchor="middle" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-weight="900" font-size="54" font-style="italic" fill="#ffffff" letter-spacing="-1">
+      Free Movie
+    </text>
+  </g>
 </svg>

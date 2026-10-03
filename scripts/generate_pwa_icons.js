@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
 
-function createPNGBuffer(width, height) {
+function createFreeMoviePNGBuffer(width, height) {
   // Create raw RGBA image data
   const rawData = Buffer.alloc(height * (width * 4 + 1));
   
@@ -13,41 +13,83 @@ function createPNGBuffer(width, height) {
     for (let x = 0; x < width; x++) {
       const pxOffset = rowOffset + 1 + x * 4;
       
-      // Calculate radius from center
-      const cx = width / 2;
-      const cy = height / 2;
-      const dx = x - cx;
-      const dy = y - cy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxR = width * 0.42;
+      const nx = x / width;
+      const ny = y / height;
 
-      // Dark movie theme background (#090a0f)
-      let r = 9;
-      let g = 10;
-      let b = 15;
+      // Base: White Card (#FFFFFF)
+      let r = 255;
+      let g = 255;
+      let b = 255;
       let a = 255;
 
-      // Outer play badge circle with green glow (#00df82)
-      if (dist < maxR && dist > maxR - (width * 0.03)) {
-        r = 0; g = 223; b = 130; // Emerald accent
-      } else if (dist <= maxR - (width * 0.03)) {
-        // Inner badge background (#121422)
-        r = 18; g = 20; b = 34;
+      // Bottom blue wave curve
+      const waveThreshold = 0.65 + Math.sin(nx * Math.PI) * 0.05;
+      const greenThreshold = waveThreshold - 0.04;
 
-        // Play triangle inside center
-        const triWidth = width * 0.22;
-        const triHeight = height * 0.26;
-        const leftX = cx - triWidth * 0.35;
-        const rightX = cx + triWidth * 0.65;
-        const topY = cy - triHeight / 2;
-        const bottomY = cy + triHeight / 2;
+      if (ny >= waveThreshold) {
+        // Deep vibrant blue gradient
+        const t = (ny - waveThreshold) / (1 - waveThreshold);
+        r = Math.round(0 * (1 - t) + 2 * t);
+        g = Math.round(180 * (1 - t) + 62 * t);
+        b = Math.round(216 * (1 - t) + 138 * t);
+      } else if (ny >= greenThreshold) {
+        // Soft green wave accent
+        r = 128;
+        g = 237;
+        b = 153;
+      }
 
-        if (x >= leftX && x <= rightX) {
-          const progress = (x - leftX) / (rightX - leftX);
-          const currentTopY = cy - (triHeight / 2) * (1 - progress);
-          const currentBottomY = cy + (triHeight / 2) * (1 - progress);
-          if (y >= currentTopY && y <= currentBottomY) {
-            r = 0; g = 223; b = 130;
+      // Center Play & Download Logo
+      const cx = 0.5;
+      const cy = 0.38;
+      const triLeft = 0.32;
+      const triRight = 0.72;
+      const triTop = cy - 0.20;
+      const triBottom = cy + 0.20;
+
+      // Check if inside play triangle
+      if (nx >= triLeft && nx <= triRight) {
+        const progress = (nx - triLeft) / (triRight - triLeft);
+        const curTop = cy - (0.20 * (1 - progress));
+        const curBottom = cy + (0.20 * (1 - progress));
+
+        if (ny >= curTop && ny <= curBottom) {
+          // Play button gradient (Cyan to Blue)
+          r = Math.round(0 * (1 - progress) + 42 * progress);
+          g = Math.round(245 * (1 - progress) + 111 * progress);
+          b = Math.round(212 * (1 - progress) + 219 * progress);
+
+          // Left film strip perforated border
+          if (nx <= triLeft + 0.10) {
+            r = 0; g = 187; b = 249;
+            // Dots
+            const dotY = (ny - curTop) / (curBottom - curTop);
+            if (dotY > 0.15 && dotY < 0.25 && nx > triLeft + 0.03 && nx < triLeft + 0.07) {
+              r = 0; g = 53; b = 102;
+            } else if (dotY > 0.45 && dotY < 0.55 && nx > triLeft + 0.03 && nx < triLeft + 0.07) {
+              r = 0; g = 53; b = 102;
+            } else if (dotY > 0.75 && dotY < 0.85 && nx > triLeft + 0.03 && nx < triLeft + 0.07) {
+              r = 0; g = 53; b = 102;
+            }
+          }
+
+          // Green download arrow in center
+          const arrowWidth = 0.12;
+          const arrowHeadWidth = 0.22;
+          const arrowTop = cy - 0.12;
+          const arrowMid = cy + 0.02;
+          const arrowBottom = cy + 0.14;
+
+          if (nx >= cx - arrowWidth / 2 && nx <= cx + arrowWidth / 2 && ny >= arrowTop && ny <= arrowMid) {
+            // Arrow stem (Green #52B788)
+            r = 82; g = 183; b = 136;
+          } else if (ny >= arrowMid && ny <= arrowBottom) {
+            const arrProgress = (ny - arrowMid) / (arrowBottom - arrowMid);
+            const span = (arrowHeadWidth / 2) * (1 - arrProgress);
+            if (nx >= cx - span && nx <= cx + span) {
+              // Arrow head (Vibrant Green #74C69D)
+              r = 116; g = 198; b = 157;
+            }
           }
         }
       }
@@ -119,16 +161,23 @@ if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir, { recursive: true });
 }
 
-console.log('Generating 192x192 PNG icon...');
-fs.writeFileSync(path.join(publicDir, 'pwa-192x192.png'), createPNGBuffer(192, 192));
+console.log('Generating 192x192 PNG Free Movie icon...');
+fs.writeFileSync(path.join(publicDir, 'pwa-192x192.png'), createFreeMoviePNGBuffer(192, 192));
+fs.writeFileSync(path.join(publicDir, 'icon.png'), createFreeMoviePNGBuffer(192, 192));
 
-console.log('Generating 512x512 PNG icon...');
-fs.writeFileSync(path.join(publicDir, 'pwa-512x512.png'), createPNGBuffer(512, 512));
+console.log('Generating 512x512 PNG Free Movie icon...');
+fs.writeFileSync(path.join(publicDir, 'pwa-512x512.png'), createFreeMoviePNGBuffer(512, 512));
 
-console.log('Generating 512x512 Maskable PNG icon...');
-fs.writeFileSync(path.join(publicDir, 'pwa-maskable-512x512.png'), createPNGBuffer(512, 512));
+console.log('Generating 512x512 Maskable Free Movie icon...');
+fs.writeFileSync(path.join(publicDir, 'pwa-maskable-512x512.png'), createFreeMoviePNGBuffer(512, 512));
 
-console.log('Generating Apple Touch PNG icon...');
-fs.writeFileSync(path.join(publicDir, 'apple-touch-icon.png'), createPNGBuffer(180, 180));
+console.log('Generating Apple Touch Free Movie icon...');
+fs.writeFileSync(path.join(publicDir, 'apple-touch-icon.png'), createFreeMoviePNGBuffer(180, 180));
 
-console.log('PWA icons successfully generated in public directory!');
+// Also copy to flutter_app/assets/icon.png if directory exists
+const flutterAssetsDir = path.resolve('flutter_app', 'assets');
+if (fs.existsSync(flutterAssetsDir)) {
+  fs.writeFileSync(path.join(flutterAssetsDir, 'icon.png'), createFreeMoviePNGBuffer(192, 192));
+}
+
+console.log('Free Movie app icons successfully generated!');

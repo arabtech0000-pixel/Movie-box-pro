@@ -129,10 +129,10 @@ export const HeaderSearch: React.FC<HeaderSearchProps> = ({
       {/* Top Static Header: Search bar + Category pills joined together */}
       <div
         id="top-search-and-category-header"
-        className="shrink-0 z-30 bg-[#090a0f]/95 backdrop-blur-md border-b border-white/5 select-none"
+        className="shrink-0 z-30 bg-[#090a0f]/95 backdrop-blur-md border-b border-white/5 select-none pt-[max(env(safe-area-inset-top,0px),16px)]"
       >
         {/* Search Bar Input Trigger */}
-        <div className="px-3.5 pt-3 pb-1.5">
+        <div className="px-3.5 pt-2 pb-1.5">
           <div
             onClick={() => {
               setIsSearchOpen(true);

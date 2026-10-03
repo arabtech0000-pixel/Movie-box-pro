@@ -7,10 +7,12 @@ import {
   Maximize2,
   ChevronLeft,
   ChevronRight,
-  Globe,
   ArrowDownToLine,
+  Film,
+  Tv,
 } from 'lucide-react';
 import { MediaItem } from '../types';
+import { searchMedia } from '../services/tmdb';
 
 interface VideoPlayerModalProps {
   item: MediaItem;
@@ -27,7 +29,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
   onClose,
   onDownload,
 }) => {
-  // Parse TMDB ID
+  // Parse initial TMDB ID
   const parseTmdbId = (media: MediaItem): number => {
     if (media.tmdbId && !isNaN(media.tmdbId) && media.tmdbId > 0) {
       return media.tmdbId;
@@ -45,7 +47,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
     return media.type === 'tv' ? 66732 : 872585;
   };
 
-  const tmdbId = parseTmdbId(item);
+  const [resolvedTmdbId, setResolvedTmdbId] = useState<number>(() => parseTmdbId(item));
   const mediaType = item.type === 'tv' ? 'tv' : 'movie';
 
   const [season, setSeason] = useState<number>(initialSeason);
@@ -55,13 +57,31 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Local Device File Playback State
-  const [localVideoUrl, setLocalVideoUrl] = useState<string | null>(null);
-  const [localFileName] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
+  const [localVideoUrl] = useState<string | null>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
-  // Sync initial props if they change
+  // Dynamically resolve TMDB ID by title if tmdbId was not numeric
+  useEffect(() => {
+    let isMounted = true;
+    const initialId = parseTmdbId(item);
+    setResolvedTmdbId(initialId);
+
+    if ((!item.tmdbId || isNaN(item.tmdbId)) && item.title) {
+      searchMedia(item.title)
+        .then((res) => {
+          if (isMounted && res.length > 0 && res[0].tmdbId) {
+            setResolvedTmdbId(res[0].tmdbId);
+          }
+        })
+        .catch(() => {});
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [item]);
+
+  // Sync initial props
   useEffect(() => {
     setSeason(initialSeason || 1);
     setEpisode(initialEpisode || 1);
@@ -83,13 +103,13 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
     item.episodesCount ||
     (item.episodes && item.episodes.length > 0 ? item.episodes.length : 24);
 
-  // Construct VidSrc.sbs provider URL accurately with season & episode
+  // VidSrc.sbs primary verified stream URL
   const streamUrl =
     mediaType === 'tv'
-      ? `https://vidsrc.sbs/embed/tv/${tmdbId}/${season}/${episode}`
-      : `https://vidsrc.sbs/embed/movie/${tmdbId}`;
+      ? `https://vidsrc.sbs/embed/tv/${resolvedTmdbId}/${season}/${episode}`
+      : `https://vidsrc.sbs/embed/movie/${resolvedTmdbId}`;
 
-  // Mobile / Browser Back Button Handling & Auto Orientation
+  // Mobile / Browser Back Button Handling
   useEffect(() => {
     window.history.pushState({ modal: 'video_player_modal' }, '');
     const handlePopState = () => {
@@ -155,56 +175,42 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
   return (
     <div
       id="video-player-modal"
-      className="fixed inset-0 z-50 bg-[#07080e] flex flex-col overflow-hidden select-none"
+      className="fixed inset-0 z-50 bg-[#06070d] flex flex-col overflow-hidden select-none"
     >
-      {/* Hidden File Input if needed */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept="video/*,.mp4,.mkv,.webm,.avi"
-        className="hidden"
-      />
-
-      {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 bg-[#0d0f1a]/95 backdrop-blur-md border-b border-white/10 px-4 py-3">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+      {/* Clean, Non-Overlapping Top Header Bar */}
+      <header className="sticky top-0 z-40 bg-[#090b14]/95 backdrop-blur-md border-b border-white/10 px-3.5 py-2.5 pt-[max(env(safe-area-inset-top,0px),12px)]">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
+          {/* Left: Close Button + Single Clean Title/Subtitle */}
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition active:scale-95 shrink-0 cursor-pointer"
-              title="Close Player"
+              title="Back"
             >
-              <X className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
             </button>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#00df82] animate-pulse shrink-0" />
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#00df82]/20 text-[#00df82] uppercase tracking-wide">
-                  VidSrc.sbs
-                </span>
-                <span className="text-[11px] font-semibold text-emerald-400">
-                  {mediaType === 'tv' ? `Season ${season} • Episode ${episode}` : item.year || '2024'}
-                </span>
-              </div>
-              <h2 className="text-sm sm:text-base font-extrabold text-white truncate">
-                {localFileName || item.title}
+
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm sm:text-base font-extrabold text-white truncate leading-tight">
+                {item.title}
               </h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                {mediaType === 'tv' ? (
+                  <span className="text-[11px] font-semibold text-[#00df82] flex items-center gap-1">
+                    <Tv className="w-3 h-3" /> Season {season} • Episode {episode}
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-semibold text-zinc-400 flex items-center gap-1">
+                    <Film className="w-3 h-3" /> {item.year || 'Full Movie'}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
+          {/* Right: Actions */}
           <div className="flex items-center gap-2 shrink-0">
-            {localVideoUrl && (
-              <button
-                onClick={() => setLocalVideoUrl(null)}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-[11px] font-semibold bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30 transition cursor-pointer"
-                title="Switch back to VidSrc online stream"
-              >
-                <Globe className="w-3.5 h-3.5" />
-                <span>Online Stream</span>
-              </button>
-            )}
-
-            {mediaType === 'tv' && !localVideoUrl && (
+            {mediaType === 'tv' && (
               <div className="flex items-center bg-white/5 border border-white/10 rounded-xl p-0.5">
                 <button
                   onClick={handlePrevEpisode}
@@ -227,7 +233,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
               </div>
             )}
 
-            {onDownload && !localVideoUrl && (
+            {onDownload && (
               <button
                 onClick={() =>
                   onDownload(item, {
@@ -236,31 +242,29 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                   })
                 }
                 className="w-8 h-8 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 text-[#00df82] border border-emerald-500/40 flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm"
-                title="Download video for offline playback"
+                title="Download for offline"
               >
                 <ArrowDownToLine className="w-4 h-4 stroke-[2.5]" />
               </button>
             )}
 
-            {!localVideoUrl && (
-              <button
-                onClick={handleReload}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer"
-                title="Reload Stream"
-              >
-                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#00df82]' : ''}`} />
-              </button>
-            )}
+            <button
+              onClick={handleReload}
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer"
+              title="Reload Stream"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#00df82]' : ''}`} />
+            </button>
 
             <button
               onClick={handleToggleFullscreen}
               className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer"
-              title="Fullscreen / Landscape View"
+              title="Fullscreen"
             >
               <Maximize2 className="w-4 h-4 text-[#00df82]" />
             </button>
 
-            {mediaType === 'tv' && !localVideoUrl && (
+            {mediaType === 'tv' && (
               <button
                 onClick={() => setShowEpisodesDrawer(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#00df82] hover:bg-[#00c975] text-black transition active:scale-95 cursor-pointer shadow-lg shadow-emerald-500/20"
@@ -273,15 +277,13 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
         </div>
       </header>
 
-      {/* Main Player Screen - Pure Video Player Focus */}
-      <main className="w-full max-w-6xl mx-auto p-2 sm:p-4 flex-1 flex flex-col justify-center items-center overflow-hidden">
-        {/* 16:9 VIDEO CONTAINER */}
+      {/* Main Video Stream Container */}
+      <main className="w-full max-w-5xl mx-auto p-2 sm:p-4 flex-1 flex flex-col justify-center items-center overflow-hidden">
         <div
           ref={playerContainerRef}
-          className="relative aspect-video w-full max-h-[calc(100vh-80px)] rounded-2xl sm:rounded-3xl overflow-hidden bg-black border border-white/10 shadow-2xl"
+          className="relative aspect-video w-full max-h-[calc(100vh-100px)] rounded-2xl sm:rounded-3xl overflow-hidden bg-black border border-white/10 shadow-2xl"
         >
           {localVideoUrl ? (
-            /* Native HTML5 Video Player */
             <video
               src={localVideoUrl}
               controls
@@ -296,15 +298,15 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 <div className="absolute inset-0 z-20 bg-zinc-950 flex flex-col items-center justify-center gap-3 p-4">
                   <div className="w-10 h-10 border-4 border-[#00df82]/20 border-t-[#00df82] rounded-full animate-spin" />
                   <p className="text-xs font-semibold text-zinc-300">
-                    Loading VidSrc.sbs {mediaType === 'tv' ? `S${season}:E${episode}` : 'Movie'}...
+                    Loading {mediaType === 'tv' ? `Season ${season} Episode ${episode}` : item.title}...
                   </p>
                 </div>
               )}
 
               <iframe
-                key={`${iframeKey}-${season}-${episode}`}
+                key={`${iframeKey}-${season}-${episode}-${resolvedTmdbId}`}
                 src={streamUrl}
-                title={`${item.title} S${season}E${episode}`}
+                title={`${item.title} ${mediaType === 'tv' ? `S${season}E${episode}` : ''}`}
                 className="w-full h-full border-0"
                 frameBorder="0"
                 allowFullScreen
@@ -376,9 +378,11 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-xs ${
-                        isCurr ? 'bg-[#00df82] text-black' : 'bg-white/5 text-zinc-400'
-                      }`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-xs ${
+                          isCurr ? 'bg-[#00df82] text-black' : 'bg-white/5 text-zinc-400'
+                        }`}
+                      >
                         {epNum}
                       </div>
                       <div>
@@ -392,7 +396,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                     </div>
                     {isCurr ? (
                       <span className="text-[10px] font-bold bg-[#00df82] text-black px-2 py-0.5 rounded">
-                        NOW PLAYING
+                        PLAYING
                       </span>
                     ) : (
                       <Play className="w-3.5 h-3.5 text-zinc-500" />
