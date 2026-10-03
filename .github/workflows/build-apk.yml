@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install Dependencies
         run: |
@@ -35,7 +35,7 @@ jobs:
           npm run build
 
       - name: Setup Java JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -45,18 +45,19 @@ jobs:
 
       - name: Initialize Capacitor Android Platform
         run: |
-          npx @capacitor/cli init "MovieBox Pro" "com.moviebox.pro.app" --web-dir dist
-          npx @capacitor/cli add android || true
-          npx @capacitor/cli copy android
+          npx cap add android || true
+          npx cap sync android || true
 
-      - name: Build Android Release APK
+      - name: Build Android APK
         run: |
           if [ -d "android" ]; then
-            cd android && ./gradlew assembleDebug
+            cd android
+            chmod +x ./gradlew
+            ./gradlew assembleDebug --no-daemon
           fi
 
       - name: Upload Built APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: MovieBoxPro-Android-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/**/app-*.apk
