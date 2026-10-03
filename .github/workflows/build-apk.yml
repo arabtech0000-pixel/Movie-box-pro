@@ -40,14 +40,11 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          accept-android-sdk-licenses: true
-          cmdline-tools-version: latest
-
-      - name: Accept Android SDK Licenses
+      - name: Configure Android SDK & Accept Licenses
         run: |
+          mkdir -p "$ANDROID_HOME/licenses" || true
+          echo -e "24333f8a63b6825ea9c5514f83c2829b004d1fee\nd56f5187479451eabf01fb78af6dfcb131a6481e\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-license"
+          echo -e "84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
           yes | sdkmanager --licenses || true
 
       - name: Initialize and Sync Capacitor Android
@@ -55,7 +52,7 @@ jobs:
           npx cap add android || true
           npx cap sync android
           if [ -d "android" ]; then
-            echo "sdk.dir=${ANDROID_HOME:-/usr/local/lib/android/sdk}" > android/local.properties
+            echo "sdk.dir=$ANDROID_HOME" > android/local.properties
             chmod +x android/gradlew
           fi
 
