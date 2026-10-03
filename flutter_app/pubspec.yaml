@@ -1,0 +1,28 @@
+name: moviebox_pro_flutter
+description: Official Flutter Native App for MovieBox Pro Movies & TV Streaming
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_inappwebview: ^6.0.0
+  webview_flutter: ^4.7.0
+  url_launcher: ^6.2.5
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+  flutter_spinkit: ^5.2.0
+  google_fonts: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon.png

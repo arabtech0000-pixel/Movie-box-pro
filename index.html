@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>MovieBox Pro - Movies & TV Streaming Native App</title>
+    <meta name="description" content="Official MovieBox Pro native streaming app with trending movies, ShortTV, offline downloads, peer-to-peer file sharing, and VIP subscription." />
+    <meta property="og:title" content="MovieBox Pro - Native Streaming Application" />
+    <meta property="og:description" content="Official MovieBox Pro native streaming app with trending movies, ShortTV, offline downloads, peer-to-peer file sharing, and VIP subscription." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#090a0f" />
+
+    <!-- Standalone Native Application Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MovieBox" />
+    <meta name="application-name" content="MovieBox Pro" />
+
+    <!-- Icons and Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Google Scripts: Google Identity / One Tap & Google Analytics -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MOVIEBOXPRO"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-MOVIEBOXPRO', { 'send_page_view': true });
+    </script>
+  </head>
+  <body class="bg-[#090a0f] text-white antialiased selection:bg-emerald-500 selection:text-black overflow-x-hidden">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "name": "MovieBox",
+  "description": "Mobile-first movie & TV streaming app with trending shelves, ShortTV, downloads, peer-to-peer transfer, and VIP premium membership.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
