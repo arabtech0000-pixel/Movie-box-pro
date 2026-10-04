@@ -1,4 +1,4 @@
-name: Build MovieBox Pro Native Android APK
+name: Build Free Movie Native Android APK
 
 on:
   push:
@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-android-apk:
@@ -29,7 +32,7 @@ jobs:
             npm install
           fi
 
-      - name: Generate PWA Icons & Build Web Dist
+      - name: Generate PWA & App Icons & Build Web Dist
         run: |
           node scripts/generate_pwa_icons.js
           npm run build
@@ -61,18 +64,23 @@ jobs:
 
       - name: Build Android APK
         run: |
+          mkdir -p dist-apk
           if [ -d "android" ]; then
             cd android
             ./gradlew assembleDebug -x lint -x test --no-daemon --stacktrace
-            echo "Listing generated APKs:"
-            find app/build/outputs/apk -name "*.apk" || true
+            cd ..
+            find android/app/build/outputs/apk -name "*.apk" -exec cp {} dist-apk/ \;
+            cp dist-apk/app-debug.apk dist-apk/FreeMovie-v1.0.0.apk 2>/dev/null || true
+            echo "Built APK files in dist-apk:"
+            ls -la dist-apk/
           fi
 
-      - name: Upload Built Android APK
+      - name: Upload Built Android APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MovieBoxPro-Android-APK
+          name: FreeMovie-Android-APK
           path: |
-            android/app/build/outputs/apk/debug/app-debug.apk
+            dist-apk/*.apk
             android/app/build/outputs/apk/**/*.apk
-          if-no-files-found: warn
+          retention-days: 30
+          if-no-files-found: error
