@@ -27,6 +27,8 @@ import { DownloadCutInSheet } from '../DownloadCutInSheet';
 import { MovieShelf } from '../MovieShelf';
 import { subscribeAdBanners } from '../../services/adService';
 import { AdBannerCard } from '../AdBannerCard';
+import { UGANDAN_VJS, UgandanVJ } from '../../data/ugandanVjs';
+import { VjDetailModal } from '../VjDetailModal';
 
 import {
   getTrendingMedia,
@@ -83,6 +85,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 }) => {
   const [heroIndex, setHeroIndex] = useState(0);
   const [downloadCutInItem, setDownloadCutInItem] = useState<MediaItem | null>(null);
+  const [selectedVj, setSelectedVj] = useState<UgandanVJ | null>(null);
+  const [activeVjModal, setActiveVjModal] = useState<UgandanVJ | null>(null);
 
   // Dynamic TMDB data states for expanded movie categories
   const [heroItems, setHeroItems] = useState<MediaItem[]>([]);
@@ -408,36 +412,39 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   return (
     <div
       id="home-screen-view"
-      className="flex-1 flex flex-col min-h-0 h-full overflow-hidden text-white"
+      className="flex-1 flex flex-col min-h-0 h-full overflow-hidden text-white relative"
     >
-      {/* Static Top Header: Search bar + Categories joined together */}
-      <HeaderSearch
-        allItems={allItems}
-        onOpenItem={onOpenItem}
-        categories={CATEGORY_TABS}
-        activeCategory={activeCategory}
-        onSelectCategory={onSelectCategory}
-      />
-
       {/* Scrollable Screen Content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pb-24 overscroll-contain">
-        {/* Full-Bleed Hero Carousel: ALWAYS REMAINS AT THE TOP ACROSS ALL CATEGORIES */}
-        {!currentHero ? (
-          <div className="relative w-full aspect-[4/5] max-h-[460px] bg-[#11131c] animate-pulse flex flex-col justify-end p-6">
-            <div className="space-y-3">
-              <div className="h-4 w-24 bg-zinc-800 rounded" />
-              <div className="h-8 w-56 bg-zinc-800 rounded" />
-              <div className="h-4 w-36 bg-zinc-800 rounded" />
+      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pb-24 overscroll-contain relative">
+        {/* Sticky Top Header Floating Over Hero Banner */}
+        <div className="sticky top-0 z-40">
+          <HeaderSearch
+            allItems={allItems}
+            onOpenItem={onOpenItem}
+            categories={CATEGORY_TABS}
+            activeCategory={activeCategory}
+            onSelectCategory={onSelectCategory}
+          />
+        </div>
+
+        {/* Full-Bleed Hero Carousel: Pushed up into background to overlap header area */}
+        <div className="-mt-[110px] sm:-mt-[120px]">
+          {!currentHero ? (
+            <div className="relative w-full aspect-[4/5] max-h-[520px] bg-[#11131c] animate-pulse flex flex-col justify-end p-6 pt-32">
+              <div className="space-y-3">
+                <div className="h-4 w-24 bg-zinc-800 rounded" />
+                <div className="h-8 w-56 bg-zinc-800 rounded" />
+                <div className="h-4 w-36 bg-zinc-800 rounded" />
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="relative w-full aspect-[4/5] max-h-[460px] overflow-hidden select-none">
-            <img
-              src={currentHero.backdropUrl || currentHero.posterUrl}
-              alt={currentHero.title}
-              onClick={() => onOpenItem(currentHero)}
-              className="w-full h-full object-cover object-top cursor-pointer transition-all duration-700 brightness-90 hover:scale-102"
-            />
+          ) : (
+            <div className="relative w-full aspect-[4/5] max-h-[520px] overflow-hidden select-none pt-24">
+              <img
+                src={currentHero.backdropUrl || currentHero.posterUrl}
+                alt={currentHero.title}
+                onClick={() => onOpenItem(currentHero)}
+                className="w-full h-full object-cover object-top cursor-pointer transition-all duration-700 brightness-90 hover:scale-102"
+              />
 
             {/* Ambient Vignette Gradients */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f] via-[#090a0f]/20 to-black/60 pointer-events-none" />
@@ -511,45 +518,119 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
           </div>
         )}
-
-        {/* Quick Category Navigation Pills (Directly Beneath Banner) */}
-        <div className="px-3.5 pt-3.5 pb-1 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {[
-            { label: 'Trending', icon: Flame },
-            { label: 'Series', icon: Tv },
-            { label: 'Movies', icon: Film },
-            { label: 'Action', icon: ShieldAlert },
-            { label: 'Sci-Fi', icon: Rocket },
-            { label: 'Animation', icon: Sparkles },
-            { label: 'Top Rated', icon: Trophy },
-            { label: 'Thriller', icon: Zap },
-            { label: 'Comedy', icon: Laugh },
-            { label: 'Horror', icon: Ghost },
-            { label: 'Romance', icon: Heart },
-            { label: 'Adventure', icon: Compass },
-            { label: 'Crime', icon: Eye },
-            { label: 'Mystery', icon: Layers },
-            { label: 'Kids', icon: Smile },
-            { label: 'K-Drama', icon: Crown },
-          ].map((pill) => {
-            const IconComponent = pill.icon;
-            const isSelected = activeCategory === pill.label;
-            return (
-              <button
-                key={pill.label}
-                onClick={() => onSelectCategory(pill.label)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition active:scale-95 shrink-0 cursor-pointer ${
-                  isSelected
-                    ? 'bg-[#00df82] text-black font-extrabold shadow-md shadow-emerald-500/20'
-                    : 'bg-[#161824] hover:bg-[#202334] text-zinc-300 hover:text-white border border-white/5'
-                }`}
-              >
-                <IconComponent className={`w-3.5 h-3.5 ${isSelected ? 'text-black' : 'text-[#00df82]'}`} />
-                <span>{pill.label}</span>
-              </button>
-            );
-          })}
         </div>
+
+        {/* Ugandan VJ Movie Translators Row (Replacing previous category buttons) */}
+        <div className="px-3.5 pt-3 pb-1 select-none">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#00df82] animate-pulse" />
+              <h2 className="text-xs font-black uppercase tracking-wider text-zinc-100">
+                Available VJs
+              </h2>
+            </div>
+            {selectedVj && (
+              <button
+                onClick={() => setSelectedVj(null)}
+                className="text-[11px] text-[#00df82] font-bold hover:underline cursor-pointer"
+              >
+                Show All
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar pb-1.5">
+            {UGANDAN_VJS.map((vj) => {
+              const isSelected = selectedVj?.id === vj.id;
+              return (
+                <button
+                  key={vj.id}
+                  onClick={() => {
+                    setSelectedVj(vj);
+                    setActiveVjModal(vj);
+                  }}
+                  className={`flex items-center gap-2.5 px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition active:scale-95 shrink-0 cursor-pointer border shadow-sm ${
+                    isSelected
+                      ? 'bg-[#00df82] text-black font-extrabold border-[#00df82] shadow-lg shadow-emerald-500/25'
+                      : 'bg-[#151724] hover:bg-[#1e2133] text-zinc-200 hover:text-white border-white/10'
+                  }`}
+                >
+                  <img
+                    src={vj.avatar}
+                    alt={vj.name}
+                    className="w-7 h-7 rounded-full object-cover shrink-0 ring-1.5 ring-white/20"
+                  />
+                  <span className="text-xs font-extrabold">{vj.name}</span>
+                  {vj.badge && (
+                    <span
+                      className={`text-[9px] px-1.5 py-0.5 rounded-md font-black ${
+                        isSelected
+                          ? 'bg-black/25 text-black'
+                          : 'bg-white/10 text-[#00df82]'
+                      }`}
+                    >
+                      {vj.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Selected VJ Spotlight Card */}
+        {selectedVj && (
+          <div className="mx-3.5 my-2 p-3 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-[#141726] to-[#0c0d16] border border-[#00df82]/30 flex items-center justify-between gap-3 animate-in fade-in duration-200 shadow-xl">
+            <div
+              onClick={() => setActiveVjModal(selectedVj)}
+              className="flex items-center gap-3 min-w-0 cursor-pointer flex-1"
+            >
+              <img
+                src={selectedVj.avatar}
+                alt={selectedVj.name}
+                className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-[#00df82] shadow-md shadow-emerald-500/20"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-xs font-black text-white truncate">{selectedVj.fullName}</h3>
+                  <span className="text-[9px] bg-[#00df82]/20 text-[#00df82] px-1.5 py-0.2 rounded font-bold shrink-0">
+                    Luganda Dub
+                  </span>
+                </div>
+                <p className="text-[10px] text-zinc-400 truncate mt-0.5">{selectedVj.tagline}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setActiveVjModal(selectedVj)}
+                className="px-2.5 py-1 rounded-lg bg-[#00df82] hover:bg-[#00c975] text-black font-extrabold text-[10px] shadow transition active:scale-95 cursor-pointer shrink-0"
+              >
+                View All
+              </button>
+              <button
+                onClick={() => setSelectedVj(null)}
+                className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-zinc-400 hover:text-white flex items-center justify-center text-xs shrink-0 cursor-pointer"
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Selected VJ Translated Releases Shelf */}
+        {selectedVj && (
+          <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+            <MovieShelf
+              title={`${selectedVj.name} Luganda Translated Movies`}
+              icon={<Flame className="w-4 h-4 text-[#00df82]" />}
+              items={trendingMovies.length > 0 ? trendingMovies.slice(0, 10) : allItems.slice(0, 10)}
+              onOpenItem={onOpenItem}
+              onDownloadItem={(item) => onDownloadItem(item)}
+              badge="Luganda Dub"
+            />
+          </div>
+        )}
 
         {/* CONTENT BELOW THE BANNER */}
         {activeCategory !== 'Trending' ? (
@@ -567,7 +648,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <MovieShelf
                     title={`Top Featured ${activeCategory}`}
                     icon={<Sparkles className="w-4 h-4 text-[#00df82]" />}
-                    subtitle={`Highest rated and most watched ${activeCategory.toLowerCase()}`}
                     items={categoryItems.slice(0, 10)}
                     onOpenItem={onOpenItem}
                     onDownloadItem={(item) => onDownloadItem(item)}
@@ -585,7 +665,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <MovieShelf
                     title={`Trending ${activeCategory} Now`}
                     icon={<Flame className="w-4 h-4 text-[#00df82]" />}
-                    subtitle={`Popular releases streaming today`}
                     items={categoryItems.slice(10, 20)}
                     onOpenItem={onOpenItem}
                     onDownloadItem={(item) => onDownloadItem(item)}
@@ -657,7 +736,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Trending Movies"
               icon={<Flame className="w-4 h-4" />}
-              subtitle="Most popular and streamed right now"
               items={trendingMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -670,23 +748,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <AdBannerCard banners={adBanners} variant="shelf" className="my-2" />
             )}
 
-            {/* CATEGORY SHELF 2: Top Rated All-Time Blockbusters */}
+            {/* CATEGORY SHELF 2: Blockbusters */}
             <MovieShelf
-              title="Top Rated Blockbusters"
+              title="Blockbusters"
               icon={<Trophy className="w-4 h-4" />}
-              subtitle="Critically acclaimed cinematic masterpieces"
               items={topRatedMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
               onMoreClick={() => onSelectCategory('Top Rated')}
-              badge="8.0+ IMDb"
+              badge="Top Rated"
             />
 
-            {/* CATEGORY SHELF 3: Now Playing in Theaters */}
+            {/* CATEGORY SHELF 3: Action and High */}
             <MovieShelf
-              title="Now Playing in Theaters"
+              title="Action and High"
               icon={<Sparkles className="w-4 h-4" />}
-              subtitle="Fresh theatrical box office releases"
               items={nowPlaying}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -697,7 +773,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Binge-Worthy TV Series"
               icon={<Tv className="w-4 h-4" />}
-              subtitle="Trending television seasons and drama series"
               items={popularSeries}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -709,7 +784,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Action & High-Octane"
               icon={<ShieldAlert className="w-4 h-4" />}
-              subtitle="Explosive stunts, combat & adrenaline"
               items={actionMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -720,7 +794,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Sci-Fi & Cosmic Worlds"
               icon={<Rocket className="w-4 h-4" />}
-              subtitle="Space exploration, time travel & cyber realms"
               items={sciFiMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -731,7 +804,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Animation & Anime Marvels"
               icon={<Sparkles className="w-4 h-4" />}
-              subtitle="Vibrant animated features & Japanese cinema"
               items={animationMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -742,7 +814,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Psychological Thrillers & Suspense"
               icon={<Zap className="w-4 h-4" />}
-              subtitle="Tense mind-benders and edge-of-your-seat drama"
               items={thrillerMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -753,7 +824,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Comedy & Feel-Good Laughs"
               icon={<Laugh className="w-4 h-4" />}
-              subtitle="Hilarious rom-coms and witty adventures"
               items={comedyMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -764,7 +834,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Chilling Horror & Supernatural"
               icon={<Ghost className="w-4 h-4" />}
-              subtitle="Spine-tingling jumpscares, haunts & dread"
               items={horrorMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -775,7 +844,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Romance & Heartfelt Stories"
               icon={<Heart className="w-4 h-4" />}
-              subtitle="Passionate love stories & touching journeys"
               items={romanceMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -786,7 +854,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Epic Adventure & Quests"
               icon={<Compass className="w-4 h-4" />}
-              subtitle="Treasure hunts, mythical journeys & survival"
               items={adventureMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -797,7 +864,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Crime, Mafia & High-Stakes Heists"
               icon={<Eye className="w-4 h-4" />}
-              subtitle="Underworld conspiracies, mobsters & detectives"
               items={crimeMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -808,7 +874,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Mind-Bending Whodunits & Mystery"
               icon={<Layers className="w-4 h-4" />}
-              subtitle="Secret plots, clever clues & shocking twists"
               items={mysteryMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -819,7 +884,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Family & Kids Movie Night"
               icon={<Smile className="w-4 h-4" />}
-              subtitle="Wholesome fun for all ages and family weekends"
               items={familyMovies}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -830,7 +894,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <MovieShelf
               title="Korean Cinema & Asian Hits"
               icon={<Crown className="w-4 h-4" />}
-              subtitle="Award-winning Korean thrillers & dramas"
               items={koreanMedia}
               onOpenItem={onOpenItem}
               onDownloadItem={(item) => onDownloadItem(item)}
@@ -888,6 +951,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             onDownloadItem(downloadCutInItem);
             setDownloadCutInItem(null);
           }}
+        />
+      )}
+
+      {/* Dedicated VJ Movies Page (3-Column Vertical Scroll) */}
+      {activeVjModal && (
+        <VjDetailModal
+          vj={activeVjModal}
+          allItems={allItems.length > 0 ? allItems : trendingMovies}
+          onClose={() => setActiveVjModal(null)}
+          onOpenItem={onOpenItem}
+          onPlayItem={onPlayItem}
+          onDownloadItem={onDownloadItem}
         />
       )}
     </div>

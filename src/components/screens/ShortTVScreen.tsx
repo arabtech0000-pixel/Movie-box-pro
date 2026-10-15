@@ -177,65 +177,67 @@ export const ShortTVScreen: React.FC<ShortTVScreenProps> = ({
   return (
     <div
       id="series-tv-screen-view"
-      className="flex-1 flex flex-col min-h-0 h-full overflow-hidden text-white"
+      className="flex-1 flex flex-col min-h-0 h-full overflow-hidden text-white relative"
     >
-      {/* STATIC TOP HEADER: Discover / For You + Series Genre Chips - completely static */}
-      <div className="shrink-0 z-30 bg-[#090a0f]/95 backdrop-blur-md pt-3 pb-2 px-4 border-b border-white/5 space-y-2 select-none">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => setTopTab('Discover')}
-              className={`text-base font-extrabold transition relative pb-1 flex items-center gap-1.5 ${
-                topTab === 'Discover' ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              <Tv className="w-4 h-4 text-[#00df82]" />
-              <span>Series & Shows</span>
-              {topTab === 'Discover' && (
-                <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#00df82] rounded-full shadow-sm shadow-[#00df82]/50" />
-              )}
-            </button>
+      {/* SCROLLABLE CONTENT: Swipes up smoothly */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pb-24 overscroll-contain relative">
+        {/* STICKY TOP HEADER FLOATING OVER HERO BANNER */}
+        <div className="sticky top-0 z-40 bg-gradient-to-b from-black/95 via-black/40 to-transparent backdrop-blur-md pt-[max(env(safe-area-inset-top,0px),12px)] pb-2 px-4 space-y-2 select-none">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => setTopTab('Discover')}
+                className={`text-base font-extrabold transition relative pb-1 flex items-center gap-1.5 ${
+                  topTab === 'Discover' ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <Tv className="w-4 h-4 text-[#00df82]" />
+                <span>Series & Shows</span>
+                {topTab === 'Discover' && (
+                  <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#00df82] rounded-full shadow-sm shadow-[#00df82]/50" />
+                )}
+              </button>
 
-            <button
-              onClick={() => setTopTab('For You')}
-              className={`text-base font-extrabold transition relative pb-1 ${
-                topTab === 'For You' ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              <span>For You</span>
-              {topTab === 'For You' && (
-                <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#00df82] rounded-full shadow-sm shadow-[#00df82]/50" />
-              )}
-            </button>
+              <button
+                onClick={() => setTopTab('For You')}
+                className={`text-base font-extrabold transition relative pb-1 ${
+                  topTab === 'For You' ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <span>For You</span>
+                {topTab === 'For You' && (
+                  <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#00df82] rounded-full shadow-sm shadow-[#00df82]/50" />
+                )}
+              </button>
+            </div>
+
+            <span className="text-[10px] bg-blue-500/10 text-blue-400 font-bold px-2 py-0.5 rounded-full border border-blue-500/20">
+              TV Hub
+            </span>
           </div>
 
-          <span className="text-[10px] bg-blue-500/10 text-blue-400 font-bold px-2 py-0.5 rounded-full border border-blue-500/20">
-            TV Hub
-          </span>
+          {/* Filter Chips row */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+            {GENRE_CHIPS.map((chip) => (
+              <button
+                key={chip}
+                onClick={() => setActiveGenre(chip)}
+                className={`text-xs px-3 py-1 rounded-full whitespace-nowrap transition border ${
+                  activeGenre === chip
+                    ? 'bg-[#00df82] text-black font-extrabold border-transparent shadow-sm'
+                    : 'bg-[#151825] text-zinc-400 hover:text-white border-white/5'
+                }`}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Filter Chips row */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
-          {GENRE_CHIPS.map((chip) => (
-            <button
-              key={chip}
-              onClick={() => setActiveGenre(chip)}
-              className={`text-xs px-3 py-1 rounded-full whitespace-nowrap transition border ${
-                activeGenre === chip
-                  ? 'bg-[#00df82] text-black font-extrabold border-transparent shadow-sm'
-                  : 'bg-[#151825] text-zinc-400 hover:text-white border-white/5'
-              }`}
-            >
-              {chip}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* SCROLLABLE CONTENT: Swipes up smoothly */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pb-24 overscroll-contain">
+        {/* FEED CONTENT */}
+        <div className="-mt-[110px] sm:-mt-[120px]">
         {isLoading ? (
-          <div className="py-32 flex flex-col items-center justify-center space-y-3 text-zinc-400">
+          <div className="py-32 flex flex-col items-center justify-center space-y-3 text-zinc-400 pt-32">
             <Loader2 className="w-8 h-8 animate-spin text-[#00df82]" />
             <span className="text-xs font-semibold">Loading TV Series catalog...</span>
           </div>
@@ -618,6 +620,7 @@ export const ShortTVScreen: React.FC<ShortTVScreenProps> = ({
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   );

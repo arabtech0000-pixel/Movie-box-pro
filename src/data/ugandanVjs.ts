@@ -1,0 +1,130 @@
+export interface UgandanVJ {
+  id: string;
+  name: string;
+  fullName: string;
+  avatar: string;
+  tagline: string;
+  genre: string;
+  badge?: string;
+  sampleMovies: string[];
+}
+
+export const UGANDAN_VJS: UgandanVJ[] = [
+  {
+    id: 'vj-junior',
+    name: 'VJ Junior',
+    fullName: 'Marysmarts Matovu (VJ Junior)',
+    avatar: '/vjs/vj-junior.jpg',
+    tagline: 'The undisputed King of Action & Blockbuster Luganda translation',
+    genre: 'Action',
+    badge: 'King',
+    sampleMovies: ['Deadpool & Wolverine', 'John Wick', 'Fast & Furious', 'Gladiator II', 'The Beekeeper', 'Extraction 2', 'Mission Impossible', 'Top Gun: Maverick', 'Rebel Ridge'],
+  },
+  {
+    id: 'vj-jingo',
+    name: 'VJ Jingo',
+    fullName: 'VJ Jingo (Kibonge)',
+    avatar: '/vjs/vj-jingo.jpg',
+    tagline: 'Legendary pioneer of Ugandan movie narration & comedy',
+    genre: 'Comedy',
+    badge: 'Legend',
+    sampleMovies: ['Rush Hour', 'Bad Boys: Ride or Die', 'Shaolin Soccer', 'Police Story', 'Kung Fu Hustle', 'Beverly Hills Cop', 'Johnny English', 'The Mask'],
+  },
+  {
+    id: 'vj-unclet',
+    name: 'VJ Uncle T',
+    fullName: 'VJ Uncle T (The Master)',
+    avatar: '/vjs/vj-unclet.jpg',
+    tagline: 'Fast-paced action, martial arts, and high-energy storytelling',
+    genre: 'Thriller',
+    badge: 'Popular',
+    sampleMovies: ['Extraction', 'The Equalizer 3', 'Ip Man', 'Nobody', 'Transporter', 'Wrath of Man', 'Bullet Train', 'The Killer'],
+  },
+  {
+    id: 'vj-emmy',
+    name: 'VJ Emmy',
+    fullName: 'VJ Emmy',
+    avatar: '/vjs/vj-emmy.jpg',
+    tagline: 'Top-tier Hollywood blockbusters, romance, and fantasy',
+    genre: 'Fantasy',
+    badge: 'Top VJ',
+    sampleMovies: ['Avatar: The Way of Water', 'Dune: Part Two', 'Aquaman and the Lost Kingdom', 'Rebel Moon', 'Godzilla x Kong', 'Kingdom of the Planet of the Apes'],
+  },
+  {
+    id: 'vj-kevo',
+    name: 'VJ Kevo',
+    fullName: 'VJ Kevo',
+    avatar: '/vjs/vj-kevo.jpg',
+    tagline: 'Suspense thriller movies, crime sagas, and detective hits',
+    genre: 'Crime',
+    badge: 'Hot',
+    sampleMovies: ['The Batman', 'Sicario', 'The Gray Man', 'Knives Out', 'Glass Onion', 'Twisters', 'Civil War'],
+  },
+  {
+    id: 'vj-icep',
+    name: 'VJ Ice P',
+    fullName: 'VJ Ice P',
+    avatar: '/vjs/vj-icep.jpg',
+    tagline: 'Cool commentary on sci-fi spectacles and superhero hits',
+    genre: 'Sci-Fi',
+    badge: 'Fan Fav',
+    sampleMovies: ['Interstellar', 'Spider-Man: Across the Spider-Verse', 'Oppenheimer', 'Tenet', 'Transformers: Rise of the Beasts', 'Alien: Romulus'],
+  },
+  {
+    id: 'vj-mark',
+    name: 'VJ Mark',
+    fullName: 'VJ Mark',
+    avatar: '/vjs/vj-mark.jpg',
+    tagline: 'War movies, historical epics, and intense drama narration',
+    genre: 'War',
+    badge: 'Pro',
+    sampleMovies: ['1917', 'Top Gun: Maverick', 'Hacksaw Ridge', 'All Quiet on the Western Front', 'The Covenant', 'Sisu'],
+  },
+  {
+    id: 'vj-omutaka',
+    name: 'VJ Omutaka',
+    fullName: 'VJ Omutaka',
+    avatar: '/vjs/vj-omutaka.jpg',
+    tagline: 'Deep cultural Luganda proverbs, classic hits, and drama',
+    genre: 'Drama',
+    sampleMovies: ['The Godfather', 'Scarface', 'Blood Diamond', 'Troy', 'Braveheart', 'Gladiator', 'The Departed'],
+  },
+  {
+    id: 'vj-chris',
+    name: 'VJ Chris',
+    fullName: 'VJ Chris',
+    avatar: '/vjs/vj-chris.jpg',
+    tagline: 'Multi-episode drama series, telenovelas, and K-Dramas',
+    genre: 'K-Drama',
+    badge: 'Series',
+    sampleMovies: ['Squid Game', 'Money Heist', 'Shōgun', 'Prison Break', 'Vincenzo', 'All of Us Are Dead'],
+  },
+  {
+    id: 'vj-cox',
+    name: 'VJ Cox',
+    fullName: 'VJ Cox',
+    avatar: '/vjs/vj-cox.jpg',
+    tagline: 'Animation hits, family adventures, and anime dubbing',
+    genre: 'Animation',
+    badge: 'Anime',
+    sampleMovies: ['Inside Out 2', 'Kung Fu Panda 4', 'Demon Slayer', 'Despicable Me 4', 'Moana 2', 'The Wild Robot'],
+  },
+  {
+    id: 'vj-sultan',
+    name: 'VJ Sultan',
+    fullName: 'VJ Sultan',
+    avatar: '/vjs/vj-sultan.jpg',
+    tagline: 'Trending releases and weekend movie theater highlights',
+    genre: 'Adventure',
+    sampleMovies: ['Uncharted', 'Indiana Jones', 'Jumanji: The Next Level', 'Pirates of the Caribbean', 'The Lost City'],
+  },
+  {
+    id: 'vj-sammy',
+    name: 'VJ Sammy',
+    fullName: 'VJ Sammy',
+    avatar: '/vjs/vj-sammy.jpg',
+    tagline: 'Hardcore martial arts, kung fu classics, and street brawls',
+    genre: 'Action',
+    sampleMovies: ['The Raid 2', 'Ong Bak', 'Undisputed 3', 'Fist of Legend', 'Flash Point', 'Kill Zone'],
+  },
+];

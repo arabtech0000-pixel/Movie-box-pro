@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="grad-vj-mark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+    <filter id="glow-vj-mark" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#ef4444" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  
+  <!-- Outer Ring Badge -->
+  <circle cx="50" cy="50" r="48" fill="#121420" stroke="url(#grad-vj-mark)" stroke-width="3"/>
+  <circle cx="50" cy="50" r="42" fill="url(#grad-vj-mark)" opacity="0.9"/>
+  
+  <!-- Studio Headset Silhouette -->
+  <path d="M28 50 C28 34 38 22 50 22 C62 22 72 34 72 50" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Left Ear Cup -->
+  <rect x="23" y="44" width="9" height="18" rx="4" fill="#ffffff" filter="url(#glow-vj-mark)"/>
+  <!-- Right Ear Cup -->
+  <rect x="68" y="44" width="9" height="18" rx="4" fill="#ffffff" filter="url(#glow-vj-mark)"/>
+  <!-- Microphone Boom -->
+  <path d="M30 58 Q40 70 52 68" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="53" cy="68" r="3" fill="#ffffff"/>
+  
+  <!-- VJ Initials in Center -->
+  <text x="50" y="52" text-anchor="middle" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" font-size="19" fill="#ffffff" letter-spacing="-0.5">
+    MK
+  </text>
+  
+  <!-- Sub-label VJ Tag -->
+  <rect x="33" y="76" width="34" height="14" rx="4" fill="#090a0f" opacity="0.9"/>
+  <text x="50" y="86.5" text-anchor="middle" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" font-size="9" fill="#ef4444">
+    VJ
+  </text>
+</svg>

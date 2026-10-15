@@ -56,7 +56,7 @@ const INITIAL_USER: UserProfile = {
 };
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(false);
+  const [showSplash, setShowSplash] = useState<boolean>(true);
   const [isAdminScreenOpen, setIsAdminScreenOpen] = useState(false);
   // User Profile with persistent session retrieval
   const [user, setUser] = useState<UserProfile>(() => {
@@ -458,6 +458,7 @@ export default function App() {
 
   return (
     <div className="h-screen h-[100dvh] bg-[#050608] text-white flex justify-center overflow-hidden">
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       <OfflineIndicator />
       {/* Mobile-first frame container */}
       <div className="w-full max-w-md h-full bg-[#090a0f] relative shadow-2xl flex flex-col border-x border-white/5 overflow-hidden">

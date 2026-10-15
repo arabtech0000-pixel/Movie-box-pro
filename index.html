@@ -36,6 +36,19 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-MOVIEBOXPRO', { 'send_page_view': true });
+
+      // Gracefully prevent Vite HMR WebSocket send errors in iframe preview
+      window.addEventListener('error', function(e) {
+        if (e && e.message && (e.message.includes("reading 'send'") || e.message.includes('WebSocket') || e.message.includes('@vite/client'))) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        if (e && e.reason && String(e.reason).includes("reading 'send'")) {
+          e.preventDefault();
+        }
+      });
     </script>
   </head>
   <body class="bg-[#090a0f] text-white antialiased selection:bg-emerald-500 selection:text-black overflow-x-hidden">

@@ -55,6 +55,10 @@ jobs:
           npx cap add android || true
           npx cap sync android
           if [ -d "android" ]; then
+            if [ -f "google-services.json" ]; then
+              cp google-services.json android/app/google-services.json
+              echo "Copied google-services.json to android/app/"
+            fi
             echo "sdk.dir=$ANDROID_HOME" > android/local.properties
             echo "org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8" >> android/gradle.properties
             echo "android.useAndroidX=true" >> android/gradle.properties
