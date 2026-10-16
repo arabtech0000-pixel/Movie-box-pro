@@ -1,6 +1,6 @@
 {
-  "appId": "com.moviebox.pro.app",
-  "appName": "MovieBox Pro",
+  "appId": "com.freemovies.app",
+  "appName": "Free Movies",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {

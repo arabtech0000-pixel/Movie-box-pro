@@ -68,8 +68,9 @@ export const FullCastCrewSheet: React.FC<FullCastCrewSheetProps> = ({
             <h2 className="text-sm font-bold text-white truncate">
               {movieTitle}
             </h2>
-            <p className="text-[11px] text-[#00df82] font-semibold">
-              Complete Credits ({cast.length} Cast • {crew.length} Crew)
+            <p className="text-[11px] text-[#00df82] font-semibold flex items-center gap-1.5 mt-0.5">
+              <Users className="w-3.5 h-3.5" />
+              <span>Full Cast ({cast.length} Actors)</span>
             </p>
           </div>
           <button
@@ -77,35 +78,6 @@ export const FullCastCrewSheet: React.FC<FullCastCrewSheetProps> = ({
             className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition"
           >
             <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Tab Selection */}
-        <div className="flex border-b border-white/5 bg-[#0f111c] px-4 pt-2">
-          <button
-            onClick={() => setActiveTab('cast')}
-            className={`flex-1 pb-2.5 text-xs font-bold transition relative flex items-center justify-center gap-1.5 ${
-              activeTab === 'cast' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5 text-[#00df82]" />
-            <span>Full Cast ({cast.length})</span>
-            {activeTab === 'cast' && (
-              <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#00df82] rounded-full" />
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('crew')}
-            className={`flex-1 pb-2.5 text-xs font-bold transition relative flex items-center justify-center gap-1.5 ${
-              activeTab === 'crew' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            <Clapperboard className="w-3.5 h-3.5 text-[#00df82]" />
-            <span>Full Crew ({crew.length})</span>
-            {activeTab === 'crew' && (
-              <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#00df82] rounded-full" />
-            )}
           </button>
         </div>
 
@@ -117,11 +89,7 @@ export const FullCastCrewSheet: React.FC<FullCastCrewSheetProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={
-                activeTab === 'cast'
-                  ? 'Search actor or character name...'
-                  : 'Search crew member or job...'
-              }
+              placeholder="Search actor or character name..."
               className="w-full bg-[#181b28] text-white text-xs pl-8 pr-7 py-2 rounded-full outline-none focus:ring-1 focus:ring-[#00df82] placeholder:text-zinc-500"
             />
             {searchQuery && (
@@ -133,24 +101,6 @@ export const FullCastCrewSheet: React.FC<FullCastCrewSheetProps> = ({
               </button>
             )}
           </div>
-
-          {activeTab === 'crew' && departments.length > 2 && (
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar pt-1">
-              {departments.map((dept) => (
-                <button
-                  key={dept}
-                  onClick={() => setSelectedDepartment(dept)}
-                  className={`text-[11px] px-2.5 py-0.5 rounded-full whitespace-nowrap transition border ${
-                    selectedDepartment === dept
-                      ? 'bg-[#00df82] text-black font-bold border-transparent'
-                      : 'bg-[#151825] text-zinc-400 hover:text-white border-white/5'
-                  }`}
-                >
-                  {dept}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* List Content */}

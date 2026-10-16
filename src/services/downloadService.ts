@@ -43,10 +43,10 @@ export function getProviderDownloadData(
   const tmdbId = extractTmdbId(item);
   const isTv = item.type === 'tv';
 
-  const provider = 'VidSrc.sbs Provider';
-  const providerUrl = isTv
-    ? `https://vidsrc.sbs/embed/tv/${tmdbId}/${season}/${episode}`
-    : `https://vidsrc.sbs/embed/movie/${tmdbId}`;
+  const provider = 'Free Movies CDN Server';
+  const providerUrl =
+    item.videoUrl ||
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4';
   const directDownloadUrl = providerUrl;
 
   // Accurate size estimations based on resolution

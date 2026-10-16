@@ -53,6 +53,7 @@ import {
 import { ActorDetailModal } from './ActorDetailModal';
 import { FullCastCrewSheet } from './FullCastCrewSheet';
 import { DownloadCutInSheet } from './DownloadCutInSheet';
+import { CustomVideoPlayer } from './CustomVideoPlayer';
 
 interface MediaDetailModalProps {
   item: MediaItem;
@@ -108,6 +109,16 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
   const [playerProgress, setPlayerProgress] = useState(25); // percentage
   const [currentTimeStr, setCurrentTimeStr] = useState('00:15');
   const [durationStr, setDurationStr] = useState('02:18');
+
+  // Custom inline & landscape movie stream player state
+  const [isPlayingMovie, setIsPlayingMovie] = useState<boolean>(false);
+  const [isPlayerLandscape, setIsPlayerLandscape] = useState<boolean>(false);
+  const [activeEpisodeNum, setActiveEpisodeNum] = useState<number>(1);
+
+  const handleStartMoviePlayback = (epNum: number = 1) => {
+    setActiveEpisodeNum(epNum);
+    setIsPlayingMovie(true);
+  };
 
   // Selected audio track
   const [selectedAudio, setSelectedAudio] = useState('Original Audio');
@@ -306,30 +317,6 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
   const allCast: TmdbCastMember[] = useMemo(() => item.cast || [], [item.cast]);
   const allCrew: TmdbCrewMember[] = useMemo(() => item.crew || [], [item.crew]);
 
-  // Extract key directors, writers, producers
-  const keyDirectors = useMemo(() => {
-    return allCrew.filter((c) => c.job === 'Director' || c.department === 'Directing');
-  }, [allCrew]);
-
-  const keyWriters = useMemo(() => {
-    return allCrew.filter(
-      (c) =>
-        c.job === 'Screenplay' ||
-        c.job === 'Writer' ||
-        c.job === 'Story' ||
-        c.department === 'Writing'
-    );
-  }, [allCrew]);
-
-  const keyProducers = useMemo(() => {
-    return allCrew.filter(
-      (c) =>
-        c.job === 'Producer' ||
-        c.job === 'Executive Producer' ||
-        c.department === 'Production'
-    );
-  }, [allCrew]);
-
   const productionCountry = useMemo(() => {
     if (item.productionCountries && item.productionCountries.length > 0) {
       return item.productionCountries.map((c) => c.name).join(', ');
@@ -438,120 +425,144 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
       ref={containerRef}
       className="fixed inset-0 z-50 bg-[#07080d] flex flex-col max-w-md mx-auto overflow-y-auto overscroll-contain animate-in fade-in duration-200 text-white pb-24 no-scrollbar select-none"
     >
-      {/* 2. VIDEO / BACKDROP PLAYER BANNER (Auto-playing Trailer / Stream Player with Floating Overlays) */}
-      <div className="relative aspect-[16/11] sm:aspect-[16/10] min-h-[250px] w-full bg-black shrink-0 overflow-hidden group select-none shadow-2xl">
-        {/* Floating Back Button (Top Left) */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 left-3 z-40 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md flex items-center justify-center text-white transition active:scale-95 shadow-lg cursor-pointer"
-          title="Back"
-        >
-          <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
-        </button>
-
-        {/* Floating Bookmark / Favorite Button (Top Right) */}
-        <button
-          onClick={() => onToggleBookmark(item)}
-          className="absolute top-3 right-3 z-40 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md flex items-center justify-center text-white transition active:scale-95 shadow-lg cursor-pointer"
-          title="Save to Favorites"
-        >
-          {isBookmarked ? (
-            <BookmarkCheck className="w-5 h-5 text-[#00df82]" />
-          ) : (
-            <Bookmark className="w-5 h-5" />
-          )}
-        </button>
-        {activeTrailer ? (
-          <div className="relative w-full h-full bg-black">
-            <iframe
-              key={`${activeTrailer.key}-${isMuted}`}
-              src={`https://www.youtube.com/embed/${activeTrailer.key}?autoplay=1&mute=${
-                isMuted ? 1 : 0
-              }&enablejsapi=1&controls=1&playsinline=1&rel=0`}
-              title={`${item.title} Official Trailer`}
-              className="w-full h-full border-0 pointer-events-auto"
-              frameBorder="0"
-              allowFullScreen
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-              referrerPolicy="origin"
-            />
-
-            {/* Bottom-Left Mute / Unmute Audio Toggle */}
-            <div className="absolute bottom-2.5 left-2.5 z-30 flex items-center gap-1.5 pointer-events-auto">
-              {isMuted ? (
-                <button
-                  onClick={() => setIsMuted(false)}
-                  className="px-2.5 py-1.5 rounded-xl bg-black/80 hover:bg-black text-white text-[11px] font-bold flex items-center gap-1.5 backdrop-blur-md border border-white/20 shadow-lg transition active:scale-95 cursor-pointer"
-                  title="Unmute trailer audio"
-                >
-                  <VolumeX className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>Unmute</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => setIsMuted(true)}
-                  className="px-2.5 py-1.5 rounded-xl bg-black/80 hover:bg-black text-[#00df82] text-[11px] font-bold flex items-center gap-1.5 backdrop-blur-md border border-[#00df82]/40 shadow-lg transition active:scale-95 cursor-pointer"
-                  title="Mute audio"
-                >
-                  <Volume2 className="w-3.5 h-3.5 text-[#00df82]" />
-                  <span>Muted</span>
-                </button>
-              )}
-            </div>
-
-            {/* Bottom Floating Play Stream Button */}
-            <div className="absolute bottom-2.5 right-2.5 z-30 flex items-center gap-2 pointer-events-auto">
-              <button
-                onClick={() => onPlay(item, 1, selectedSeason)}
-                className="px-4 py-1.5 rounded-full bg-[#00df82] hover:bg-[#00c975] text-black font-extrabold text-xs sm:text-sm flex items-center gap-1.5 shadow-xl shadow-emerald-500/30 active:scale-95 transition cursor-pointer"
-                title="Play Full Stream"
-              >
-                <Play className="w-4 h-4 fill-black stroke-[3]" />
-                <span>Play Full {item.type === 'tv' ? 'Series' : 'Movie'}</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div
-            onClick={() => onPlay(item, 1, selectedSeason)}
-            className="relative w-full h-full bg-zinc-950 cursor-pointer"
+      {/* 2. VIDEO / BACKDROP PLAYER BANNER (Switches between Auto-playing Trailer and Native Custom Movie Player) */}
+      {isPlayingMovie ? (
+        <CustomVideoPlayer
+          item={{
+            ...item,
+            title:
+              item.type === 'tv'
+                ? `${item.title} - S${selectedSeason}E${activeEpisodeNum}`
+                : item.title,
+          }}
+          isLandscape={isPlayerLandscape}
+          onToggleLandscape={() => setIsPlayerLandscape((prev) => !prev)}
+          onBack={() => {
+            if (isPlayerLandscape) {
+              setIsPlayerLandscape(false);
+            } else {
+              setIsPlayingMovie(false);
+            }
+          }}
+          onBookmarkToggle={() => onToggleBookmark(item)}
+          isBookmarked={isBookmarked}
+          autoPlay={true}
+        />
+      ) : (
+        <div className="relative aspect-[16/11] sm:aspect-[16/10] min-h-[250px] w-full bg-black shrink-0 overflow-hidden group select-none shadow-2xl">
+          {/* Floating Back Button (Top Left) */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 left-3 z-40 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md flex items-center justify-center text-white transition active:scale-95 shadow-lg cursor-pointer"
+            title="Back"
           >
-            <img
-              src={item.backdropUrl || item.posterUrl}
-              alt={item.title}
-              className="w-full h-full object-cover brightness-75 group-hover:scale-105 transition duration-500"
-            />
-            {/* Cinematic Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0e1017] via-black/40 to-black/30" />
+            <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+          </button>
 
-            {/* Centered Single Play Hub */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 z-20">
-              <button
-                id="banner-play-stream-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPlay(item, 1, selectedSeason);
-                }}
-                className="flex items-center gap-3 px-7 py-3 rounded-full bg-[#00df82] hover:bg-[#00c975] text-black font-extrabold text-sm sm:text-base shadow-2xl shadow-emerald-500/40 hover:scale-105 active:scale-95 transition cursor-pointer"
-                title="Play Stream Now"
-              >
-                <Play className="w-5 h-5 fill-black stroke-[3]" />
-                <span>Play {item.type === 'tv' ? 'Series' : 'Movie'}</span>
-              </button>
-            </div>
+          {/* Floating Bookmark / Favorite Button (Top Right) */}
+          <button
+            onClick={() => onToggleBookmark(item)}
+            className="absolute top-3 right-3 z-40 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md flex items-center justify-center text-white transition active:scale-95 shadow-lg cursor-pointer"
+            title="Save to Favorites"
+          >
+            {isBookmarked ? (
+              <BookmarkCheck className="w-5 h-5 text-[#00df82]" />
+            ) : (
+              <Bookmark className="w-5 h-5" />
+            )}
+          </button>
+          {activeTrailer ? (
+            <div className="relative w-full h-full bg-black">
+              <iframe
+                key={`${activeTrailer.key}-${isMuted}`}
+                src={`https://www.youtube.com/embed/${activeTrailer.key}?autoplay=1&mute=${
+                  isMuted ? 1 : 0
+                }&enablejsapi=1&controls=1&playsinline=1&rel=0`}
+                title={`${item.title} Official Trailer`}
+                className="w-full h-full border-0 pointer-events-auto"
+                frameBorder="0"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                referrerPolicy="origin"
+              />
 
-            {/* Bottom Status Pill */}
-            <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-[11px] text-zinc-400 z-20 pointer-events-none">
-              <span className="bg-black/60 px-2 py-0.5 rounded backdrop-blur-xs font-medium text-white/90">
-                {item.type === 'tv' ? 'HD Series' : '1080p Feature Film'}
-              </span>
-              <span className="bg-black/60 px-2 py-0.5 rounded backdrop-blur-xs text-zinc-300">
-                {item.year || '2024'} • {item.rating ? `★ ${item.rating.toFixed(1)}` : 'Top Rated'}
-              </span>
+              {/* Bottom-Left Mute / Unmute Audio Toggle */}
+              <div className="absolute bottom-2.5 left-2.5 z-30 flex items-center gap-1.5 pointer-events-auto">
+                {isMuted ? (
+                  <button
+                    onClick={() => setIsMuted(false)}
+                    className="px-2.5 py-1.5 rounded-xl bg-black/80 hover:bg-black text-white text-[11px] font-bold flex items-center gap-1.5 backdrop-blur-md border border-white/20 shadow-lg transition active:scale-95 cursor-pointer"
+                    title="Unmute trailer audio"
+                  >
+                    <VolumeX className="w-3.5 h-3.5 text-zinc-400" />
+                    <span>Unmute</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setIsMuted(true)}
+                    className="px-2.5 py-1.5 rounded-xl bg-black/80 hover:bg-black text-[#00df82] text-[11px] font-bold flex items-center gap-1.5 backdrop-blur-md border border-[#00df82]/40 shadow-lg transition active:scale-95 cursor-pointer"
+                    title="Mute audio"
+                  >
+                    <Volume2 className="w-3.5 h-3.5 text-[#00df82]" />
+                    <span>Muted</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Bottom Floating Play Stream Button */}
+              <div className="absolute bottom-2.5 right-2.5 z-30 flex items-center gap-2 pointer-events-auto">
+                <button
+                  onClick={() => handleStartMoviePlayback(1)}
+                  className="px-4 py-1.5 rounded-full bg-[#00df82] hover:bg-[#00c975] text-black font-extrabold text-xs sm:text-sm flex items-center gap-1.5 shadow-xl shadow-emerald-500/30 active:scale-95 transition cursor-pointer"
+                  title="Play Full Stream"
+                >
+                  <Play className="w-4 h-4 fill-black stroke-[3]" />
+                  <span>Play Full {item.type === 'tv' ? 'Series' : 'Movie'}</span>
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div
+              onClick={() => handleStartMoviePlayback(1)}
+              className="relative w-full h-full bg-zinc-950 cursor-pointer"
+            >
+              <img
+                src={item.backdropUrl || item.posterUrl}
+                alt={item.title}
+                className="w-full h-full object-cover brightness-75 group-hover:scale-105 transition duration-500"
+              />
+              {/* Cinematic Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0e1017] via-black/40 to-black/30" />
+
+              {/* Centered Single Play Hub */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 z-20">
+                <button
+                  id="banner-play-stream-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleStartMoviePlayback(1);
+                  }}
+                  className="flex items-center gap-3 px-7 py-3 rounded-full bg-[#00df82] hover:bg-[#00c975] text-black font-extrabold text-sm sm:text-base shadow-2xl shadow-emerald-500/40 hover:scale-105 active:scale-95 transition cursor-pointer"
+                  title="Play Stream Now"
+                >
+                  <Play className="w-5 h-5 fill-black stroke-[3]" />
+                  <span>Play {item.type === 'tv' ? 'Series' : 'Movie'}</span>
+                </button>
+              </div>
+
+              {/* Bottom Status Pill */}
+              <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-[11px] text-zinc-400 z-20 pointer-events-none">
+                <span className="bg-black/60 px-2 py-0.5 rounded backdrop-blur-xs font-medium text-white/90">
+                  {item.type === 'tv' ? 'HD Series' : '1080p Feature Film'}
+                </span>
+                <span className="bg-black/60 px-2 py-0.5 rounded backdrop-blur-xs text-zinc-300">
+                  {item.year || '2024'} • {item.rating ? `★ ${item.rating.toFixed(1)}` : 'Top Rated'}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 3. MEDIA HEADER CARD */}
       <div className="p-3.5 space-y-4">
@@ -624,11 +635,16 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
             <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-white/5">
               <button
                 id="detail-card-play-btn"
-                onClick={() => onPlay(item, 1, selectedSeason)}
+                onClick={() => {
+                  handleStartMoviePlayback(1);
+                  if (containerRef.current) {
+                    containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
                 className="w-full flex items-center justify-center gap-2 bg-[#00df82] hover:bg-[#00c975] text-black font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl shadow-lg shadow-emerald-500/25 transition active:scale-95 cursor-pointer"
               >
                 <Play className="w-4 h-4 fill-black stroke-[3]" />
-                <span>Play Stream</span>
+                <span>{isPlayingMovie ? 'Playing Now' : 'Play Stream'}</span>
               </button>
 
               <button
@@ -666,97 +682,67 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
           </div>
         </div>
 
-        {/* 5. RESOURCES DETECTOR SECTION */}
-        <div className="pt-1">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xs font-bold text-white tracking-tight">
-              Resources Detector
-            </h3>
-            <div className="flex items-center gap-1 text-[11px] text-zinc-400 relative">
-              <span>Source: fzmovies.cms</span>
-              <button
-                onClick={() => setIsSourceHelpOpen(!isSourceHelpOpen)}
-                className="text-zinc-500 hover:text-zinc-300"
-              >
-                <HelpCircle className="w-3.5 h-3.5" />
-              </button>
+        {/* 5. RESOURCES DETECTOR SECTION (Movies Only) */}
+        {item.type !== 'tv' && (
+          <div className="pt-1">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-bold text-white tracking-tight">
+                Resources Detector
+              </h3>
+              <div className="flex items-center gap-1 text-[11px] text-zinc-400 relative">
+                <span>Source: fzmovies.cms</span>
+                <button
+                  onClick={() => setIsSourceHelpOpen(!isSourceHelpOpen)}
+                  className="text-zinc-500 hover:text-zinc-300"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                </button>
 
-              {/* Tooltip Help Box */}
-              {isSourceHelpOpen && (
-                <div className="absolute right-0 top-5 z-50 w-52 bg-[#1f222e] text-zinc-300 text-[10px] p-2.5 rounded-lg shadow-xl border border-white/10 animate-in fade-in">
-                  Verified direct high-speed CDN and peer sources for high-definition streaming and offline download.
+                {/* Tooltip Help Box */}
+                {isSourceHelpOpen && (
+                  <div className="absolute right-0 top-5 z-50 w-52 bg-[#1f222e] text-zinc-300 text-[10px] p-2.5 rounded-lg shadow-xl border border-white/10 animate-in fade-in">
+                    Verified direct high-speed CDN and peer sources for high-definition streaming and offline download.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Detected Resource Cards */}
+            <div className="space-y-2">
+              {movieResourceCards.map((res, idx) => (
+                <div
+                  key={`mov-res-${res.id}-${idx}`}
+                  onClick={() => setIsDownloadCutInOpen(true)}
+                  className="flex items-center justify-between p-3 rounded-xl bg-[#141620] hover:bg-[#1b1e2c] border border-white/5 transition cursor-pointer group"
+                >
+                  <div className="min-w-0 flex-1 pr-3">
+                    <div className="text-xs font-bold text-white group-hover:text-[#00df82] transition truncate">
+                      {res.title}
+                    </div>
+                    <div className="text-[11px] text-zinc-400 flex items-center gap-1.5 mt-0.5 truncate">
+                      <span>{res.size}</span>
+                      <span>•</span>
+                      <span>{res.duration}</span>
+                      <span>•</span>
+                      <span className="truncate">Uploaded by {res.uploader}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDownloadCutInOpen(true);
+                    }}
+                    className="flex items-center gap-1 text-[#00df82] hover:text-[#00c975] text-xs font-bold px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition shrink-0 active:scale-95"
+                  >
+                    <ArrowDownToLine className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Download</span>
+                  </button>
                 </div>
-              )}
+              ))}
             </div>
           </div>
-
-          {/* Detected Resource Cards */}
-          <div className="space-y-2">
-            {item.type === 'tv'
-              ? tvResourceCards.map((res, idx) => (
-                  <div
-                    key={`tv-res-${res.id}-${idx}`}
-                    onClick={() => setIsDownloadCutInOpen(true)}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#141620] hover:bg-[#1b1e2c] border border-white/5 transition cursor-pointer group"
-                  >
-                    <div className="min-w-0 flex-1 pr-3">
-                      <div className="text-xs font-bold text-white group-hover:text-[#00df82] transition truncate">
-                        {res.title}
-                      </div>
-                      <div className="text-[11px] text-zinc-400 flex items-center gap-1.5 mt-0.5 truncate">
-                        <span>{res.size}</span>
-                        <span>•</span>
-                        <span>{res.duration}</span>
-                        <span>•</span>
-                        <span className="truncate">Uploaded by {res.uploader}</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsDownloadCutInOpen(true);
-                      }}
-                      className="flex items-center gap-1 text-[#00df82] hover:text-[#00c975] text-xs font-bold px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition shrink-0 active:scale-95"
-                    >
-                      <ArrowDownToLine className="w-3.5 h-3.5 stroke-[2.5]" />
-                      <span>Download</span>
-                    </button>
-                  </div>
-                ))
-              : movieResourceCards.map((res, idx) => (
-                  <div
-                    key={`mov-res-${res.id}-${idx}`}
-                    onClick={() => setIsDownloadCutInOpen(true)}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#141620] hover:bg-[#1b1e2c] border border-white/5 transition cursor-pointer group"
-                  >
-                    <div className="min-w-0 flex-1 pr-3">
-                      <div className="text-xs font-bold text-white group-hover:text-[#00df82] transition truncate">
-                        {res.title}
-                      </div>
-                      <div className="text-[11px] text-zinc-400 flex items-center gap-1.5 mt-0.5 truncate">
-                        <span>{res.size}</span>
-                        <span>•</span>
-                        <span>{res.duration}</span>
-                        <span>•</span>
-                        <span className="truncate">Uploaded by {res.uploader}</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsDownloadCutInOpen(true);
-                      }}
-                      className="flex items-center gap-1 text-[#00df82] hover:text-[#00c975] text-xs font-bold px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition shrink-0 active:scale-95"
-                    >
-                      <ArrowDownToLine className="w-3.5 h-3.5 stroke-[2.5]" />
-                      <span>Download</span>
-                    </button>
-                  </div>
-                ))}
-          </div>
-        </div>
+        )}
 
         {/* 6. STORYLINE, SYNOPSIS & TAGLINE */}
         <div className="bg-[#12141c] p-3.5 rounded-xl border border-white/5 space-y-2 mt-2">
@@ -795,7 +781,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
               <span className="text-[10px] text-zinc-400">({allCast.length || 'Featured'})</span>
             </div>
 
-            {(allCast.length > 0 || allCrew.length > 0) && (
+            {allCast.length > 0 && (
               <button
                 onClick={() => {
                   setFullCreditsInitialTab('cast');
@@ -803,7 +789,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                 }}
                 className="text-xs font-semibold text-[#00df82] hover:underline flex items-center gap-0.5"
               >
-                <span>View All ({allCast.length + allCrew.length})</span>
+                <span>View All ({allCast.length})</span>
                 <ChevronRight className="w-3 h-3" />
               </button>
             )}
@@ -812,7 +798,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
           {isLoadingDetails && allCast.length === 0 ? (
             <div className="py-6 flex items-center justify-center gap-2 text-zinc-400 text-xs">
               <Loader2 className="w-4 h-4 text-[#00df82] animate-spin" />
-              <span>Loading cast & crew credits...</span>
+              <span>Loading cast...</span>
             </div>
           ) : allCast.length > 0 ? (
             <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
@@ -841,175 +827,6 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
             </div>
           ) : (
             <p className="text-xs text-zinc-500 italic">No cast details available.</p>
-          )}
-
-          {/* Key Crew Members (Directors, Writers, Producers) */}
-          {allCrew.length > 0 && (
-            <div className="bg-[#12141c] p-3 rounded-xl border border-white/5 space-y-2 text-xs">
-              <div className="flex items-center justify-between border-b border-white/5 pb-1.5">
-                <span className="font-bold text-zinc-300 flex items-center gap-1.5">
-                  <Clapperboard className="w-3.5 h-3.5 text-[#00df82]" />
-                  Key Crew & Filmmakers
-                </span>
-                <button
-                  onClick={() => {
-                    setFullCreditsInitialTab('crew');
-                    setIsFullCreditsOpen(true);
-                  }}
-                  className="text-[11px] text-[#00df82] hover:underline"
-                >
-                  Full Crew
-                </button>
-              </div>
-
-              {keyDirectors.length > 0 && (
-                <div className="flex items-start gap-2">
-                  <span className="text-zinc-400 w-20 shrink-0 font-medium">Director:</span>
-                  <div className="flex-1 flex flex-wrap gap-1">
-                    {keyDirectors.slice(0, 3).map((d, idx) => (
-                      <span
-                        key={`dir-${d.id}-${idx}`}
-                        onClick={() => setSelectedPerson({ id: d.id, name: d.name })}
-                        className="text-white hover:text-[#00df82] cursor-pointer font-medium"
-                      >
-                        {d.name}{idx < Math.min(keyDirectors.length, 3) - 1 ? ',' : ''}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {keyWriters.length > 0 && (
-                <div className="flex items-start gap-2">
-                  <span className="text-zinc-400 w-20 shrink-0 font-medium">Writer:</span>
-                  <div className="flex-1 flex flex-wrap gap-1">
-                    {keyWriters.slice(0, 3).map((w, idx) => (
-                      <span
-                        key={`writer-${w.id}-${idx}`}
-                        onClick={() => setSelectedPerson({ id: w.id, name: w.name })}
-                        className="text-white hover:text-[#00df82] cursor-pointer font-medium"
-                      >
-                        {w.name}{idx < Math.min(keyWriters.length, 3) - 1 ? ',' : ''}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {keyProducers.length > 0 && (
-                <div className="flex items-start gap-2">
-                  <span className="text-zinc-400 w-20 shrink-0 font-medium">Producer:</span>
-                  <div className="flex-1 flex flex-wrap gap-1">
-                    {keyProducers.slice(0, 3).map((p, idx) => (
-                      <span
-                        key={`prod-${p.id}-${idx}`}
-                        onClick={() => setSelectedPerson({ id: p.id, name: p.name })}
-                        className="text-white hover:text-[#00df82] cursor-pointer font-medium"
-                      >
-                        {p.name}{idx < Math.min(keyProducers.length, 3) - 1 ? ',' : ''}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* 8. DETAILED MOVIE SPECIFICATIONS & DESCRIPTIONS */}
-        <div className="bg-[#12141c] p-3.5 rounded-xl border border-white/5 space-y-3">
-          <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-            <Building className="w-3.5 h-3.5 text-[#00df82]" />
-            <span>Movie Details & Information</span>
-          </h3>
-
-          <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs">
-            <div>
-              <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Original Title</span>
-              <span className="text-zinc-200 font-medium">{item.originalTitle || item.title}</span>
-            </div>
-
-            <div>
-              <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Status</span>
-              <span className="text-emerald-400 font-medium">{item.status || 'Released'}</span>
-            </div>
-
-            <div>
-              <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Release Date</span>
-              <span className="text-zinc-200 font-medium">{item.releaseDate || item.year || '2024'}</span>
-            </div>
-
-            <div>
-              <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Duration / Runtime</span>
-              <span className="text-zinc-200 font-medium">
-                {item.type === 'tv'
-                  ? `${item.numberOfSeasons || 1} Seasons`
-                  : item.duration || formatRuntime(item.runtimeMinutes) || '1h 55m'}
-              </span>
-            </div>
-
-            {item.budget && item.budget > 0 ? (
-              <div>
-                <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Budget</span>
-                <span className="text-zinc-200 font-medium">{formatCurrency(item.budget)}</span>
-              </div>
-            ) : null}
-
-            {item.revenue && item.revenue > 0 ? (
-              <div>
-                <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Box Office / Revenue</span>
-                <span className="text-emerald-400 font-medium">{formatCurrency(item.revenue)}</span>
-              </div>
-            ) : null}
-
-            <div>
-              <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Origin Country</span>
-              <span className="text-zinc-200 font-medium">{productionCountry}</span>
-            </div>
-
-            <div>
-              <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Original Language</span>
-              <span className="text-zinc-200 font-medium uppercase">{item.originalLanguage || 'English (EN)'}</span>
-            </div>
-          </div>
-
-          {/* Production Companies */}
-          {item.productionCompanies && item.productionCompanies.length > 0 && (
-            <div className="pt-2 border-t border-white/5">
-              <span className="text-zinc-500 block text-[10px] uppercase font-semibold mb-1.5">
-                Production Companies & Studios
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {item.productionCompanies.map((comp, idx) => (
-                  <span
-                    key={`comp-${comp.id}-${idx}`}
-                    className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[11px] text-zinc-300 font-medium"
-                  >
-                    {comp.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Keywords / Topic Tags */}
-          {item.keywords && item.keywords.length > 0 && (
-            <div className="pt-2 border-t border-white/5">
-              <span className="text-zinc-500 block text-[10px] uppercase font-semibold mb-1.5 flex items-center gap-1">
-                <Tag className="w-3 h-3 text-[#00df82]" />
-                <span>Tags & Keywords</span>
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {item.keywords.slice(0, 8).map((kw, idx) => (
-                  <span
-                    key={`kw-${kw.id}-${idx}`}
-                    className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-[#00df82] font-semibold"
-                  >
-                    #{kw.name}
-                  </span>
-                ))}
-              </div>
-            </div>
           )}
         </div>
 
@@ -1046,33 +863,44 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
               </div>
             ) : episodes.length > 0 ? (
               <div className="space-y-2 max-h-96 overflow-y-auto no-scrollbar pr-1">
-                {episodes.map((ep, idx) => (
-                  <div
-                    key={`ep-${ep.id || ep.episode_number}-${idx}`}
-                    onClick={() => onPlay(item, ep.episode_number, selectedSeason)}
-                    className="flex items-center justify-between p-2 rounded-xl bg-[#141620] hover:bg-[#1a1d2c] cursor-pointer transition border border-white/5 group"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="relative w-14 h-10 rounded-lg overflow-hidden bg-zinc-800 shrink-0">
-                        <img
-                          src={getTmdbImageUrl(
-                            ep.still_path,
-                            'w342',
-                            item.backdropUrl || item.posterUrl
-                          )}
-                          alt={ep.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                          <Play className="w-3 h-3 fill-white text-white" />
+                {episodes.map((ep, idx) => {
+                  const isCurrentPlaying = isPlayingMovie && activeEpisodeNum === ep.episode_number;
+                  return (
+                    <div
+                      key={`ep-${ep.id || ep.episode_number}-${idx}`}
+                      onClick={() => {
+                        handleStartMoviePlayback(ep.episode_number);
+                        if (containerRef.current) {
+                          containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                      }}
+                      className={`flex items-center justify-between p-2 rounded-xl cursor-pointer transition border group ${
+                        isCurrentPlaying
+                          ? 'bg-emerald-500/15 border-[#00df82] text-white shadow-md'
+                          : 'bg-[#141620] hover:bg-[#1a1d2c] border-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="relative w-14 h-10 rounded-lg overflow-hidden bg-zinc-800 shrink-0">
+                          <img
+                            src={getTmdbImageUrl(
+                              ep.still_path,
+                              'w342',
+                              item.backdropUrl || item.posterUrl
+                            )}
+                            alt={ep.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <Play className={`w-3 h-3 ${isCurrentPlaying ? 'fill-[#00df82] text-[#00df82]' : 'fill-white text-white'}`} />
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs font-semibold text-white truncate group-hover:text-[#00df82]">
-                          E{ep.episode_number}: {ep.name}
-                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className={`text-xs font-semibold truncate ${isCurrentPlaying ? 'text-[#00df82]' : 'text-white group-hover:text-[#00df82]'}`}>
+                            E{ep.episode_number}: {ep.name}
+                          </div>
                         <div className="text-[10px] text-zinc-400 flex items-center gap-2 mt-0.5">
                           <span>{ep.runtime ? `${ep.runtime}m` : '45m'}</span>
                           {ep.vote_average ? (
@@ -1092,7 +920,8 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                       <ArrowDownToLine className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="space-y-2 max-h-96 overflow-y-auto no-scrollbar pr-1">
@@ -1101,7 +930,12 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                   return (
                     <div
                       key={`ep-fallback-${epNum}`}
-                      onClick={() => onPlay(item, epNum, selectedSeason)}
+                      onClick={() => {
+                        handleStartMoviePlayback(epNum);
+                        if (containerRef.current) {
+                          containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                      }}
                       className="flex items-center justify-between p-2 rounded-xl bg-[#141620] hover:bg-[#1a1d2c] cursor-pointer transition border border-white/5 group"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">

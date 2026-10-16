@@ -74,12 +74,8 @@ export default function App() {
     return INITIAL_USER;
   });
 
-  // One-time onboarding: Only show Get Started & Sign Up if new install / no account created yet
-  const [showGetStarted, setShowGetStarted] = useState<boolean>(() => {
-    const hasAccountCreated = localStorage.getItem('mb_account_created') === 'true';
-    const hasSeenOnboarding = localStorage.getItem('mb_get_started_seen') === 'true';
-    return !hasAccountCreated && !hasSeenOnboarding;
-  });
+  // The app opens directly to Home page after splash screen
+  const [showGetStarted, setShowGetStarted] = useState<boolean>(false);
   const [showSignUpPage, setShowSignUpPage] = useState<boolean>(false);
   const [signUpInitialMode, setSignUpInitialMode] = useState<'signup' | 'signin'>('signup');
 

@@ -109,10 +109,10 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   const [adSaveSuccess, setAdSaveSuccess] = useState(false);
 
   // Provider & Broadcasting Settings
-  const [activeProvider, setActiveProvider] = useState<'vidsrc' | 'vidlink' | 'superembed'>('vidsrc');
+  const [activeProvider, setActiveProvider] = useState<'custom' | 'direct'>('custom');
   const [streamQuality, setStreamQuality] = useState<'1080p' | '720p'>('1080p');
   const [announcementMsg, setAnnouncementMsg] = useState(() => {
-    return localStorage.getItem('mb_system_announcement') || '⚡ VidSrc.sbs 1080P Ultra HD streaming is live! Enjoy lag-free playback.';
+    return localStorage.getItem('mb_system_announcement') || '⚡ Free Movies Ultra HD Custom Player is live! Enjoy high-speed playback, landscape mode, and gesture controls.';
   });
   const [announcementSaved, setAnnouncementSaved] = useState(false);
   const [isPurging, setIsPurging] = useState(false);
@@ -1037,7 +1037,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
             </div>
           )}
 
-          {/* TAB 4: PROVIDER ENGINE & CONFIG */}
+          {/* TAB 4: CUSTOM PLAYER & STREAMING ENGINE */}
           {activeTab === 'providers' && (
             <div className="space-y-6">
               <div className="bg-[#121422] border border-white/10 rounded-2xl p-5 space-y-4">
@@ -1045,14 +1045,14 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
                   <div>
                     <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
                       <Radio className="w-4 h-4 text-[#00df82]" />
-                      <span>Primary Streaming Provider Mirror</span>
+                      <span>Custom Video Player & Direct CDN Engine</span>
                     </h3>
                     <p className="text-xs text-zinc-400 mt-0.5">
-                      Select active streaming server engine for movies and TV episodes
+                      Native in-app video player with landscape expansion, lock screen, speed controls & PIP
                     </p>
                   </div>
                   <span className="text-xs font-bold text-[#00df82] bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                    VidSrc.sbs Active
+                    Custom Player Active
                   </span>
                 </div>
 
@@ -1060,13 +1060,13 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
                   <div className="p-4 rounded-2xl border bg-emerald-500/15 border-[#00df82] text-white shadow-lg flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="text-sm font-bold flex items-center gap-2">
-                        <span>VidSrc.sbs Primary Engine</span>
+                        <span>Free Movies Native HTML5 Player</span>
                         <span className="text-[9px] bg-[#00df82] text-black font-black px-2 py-0.5 rounded">
-                          OFFICIAL PROVIDER
+                          NATIVE ENGINE
                         </span>
                       </div>
                       <p className="text-xs text-zinc-300">
-                        `https://vidsrc.sbs/embed/movie/&#123;tmdb_id&#125;` & `https://vidsrc.sbs/embed/tv/&#123;tmdb_id&#125;/&#123;season&#125;/&#123;episode&#125;`
+                        Zero third-party embed dependencies • Direct MP4 & CDN stream playback • Smooth scrubber progress
                       </p>
                     </div>
                     <CheckCircle2 className="w-6 h-6 text-[#00df82]" />

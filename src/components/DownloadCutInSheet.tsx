@@ -217,19 +217,10 @@ export const DownloadCutInSheet: React.FC<DownloadCutInSheetProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          <div>
-            <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              <span>Download Resources</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#00df82]/15 text-[#00df82] border border-[#00df82]/30 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00df82] animate-pulse" />
-                Player Connected
-              </span>
-            </h2>
-            <p className="text-[11px] text-zinc-400 mt-0.5">
-              Movie Database Fast CDN • Saves to device & Downloads page
-            </p>
-          </div>
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/5">
+          <h2 className="text-base font-bold text-white tracking-tight">
+            Download Resources
+          </h2>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition active:scale-95 cursor-pointer"
@@ -396,10 +387,10 @@ export const DownloadCutInSheet: React.FC<DownloadCutInSheetProps> = ({
           <button
             onClick={handleDownloadClick}
             disabled={totalSelectedMb <= 0}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#00df82] hover:bg-[#00c975] disabled:opacity-40 disabled:cursor-not-allowed text-black font-extrabold text-sm py-3 px-5 rounded-xl shadow-lg shadow-emerald-500/20 transition active:scale-98 cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-2 bg-[#00df82] hover:bg-[#00c975] disabled:opacity-40 disabled:cursor-not-allowed text-black font-black text-sm py-3 px-5 rounded-xl shadow-lg shadow-emerald-500/20 transition active:scale-98 cursor-pointer"
           >
-            <ArrowDownToLine className="w-4 h-4 stroke-[2.5]" />
-            <span>Download ({formatTotalSize(totalSelectedMb)}) • Save to Device</span>
+            <ArrowDownToLine className="w-4 h-4 stroke-[2.8]" />
+            <span>Download {formatTotalSize(totalSelectedMb)}</span>
           </button>
         </div>
       </div>

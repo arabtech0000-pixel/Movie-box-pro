@@ -16,6 +16,9 @@ import {
   Globe,
   Film,
   UserCircle2,
+  Download,
+  HelpCircle,
+  ExternalLink,
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import { AVATAR_CATEGORIES } from './SignUpScreen';
@@ -53,6 +56,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [cacheSize, setCacheSize] = useState('42.8 MB');
   const [isClearingCache, setIsClearingCache] = useState(false);
   const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false);
+  const [isApkHelpOpen, setIsApkHelpOpen] = useState(false);
 
   const isAdminUser = isAuthorizedAdmin(user);
 
@@ -377,6 +381,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               )}
 
+              {/* Android APK Download & Installation Troubleshooting */}
+              <div
+                onClick={() => setIsApkHelpOpen(true)}
+                className="p-3.5 flex items-center justify-between hover:bg-white/5 cursor-pointer bg-emerald-500/5 border-t border-white/5 group"
+              >
+                <div className="flex items-center gap-2.5 text-xs text-zinc-200">
+                  <Download className="w-4 h-4 text-[#00df82]" />
+                  <div>
+                    <span className="font-bold">Android APK & Install Help</span>
+                    <p className="text-[10px] text-zinc-400">Fix "APK is forbidden" & installation guide</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] bg-emerald-500/20 text-[#00df82] px-2 py-0.5 rounded font-bold">
+                    Guide
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-zinc-500" />
+                </div>
+              </div>
+
               {onLogout && (
                 <div
                   onClick={() => {
@@ -396,7 +420,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           <div className="text-center pt-3 text-[10px] text-zinc-500">
-            MovieBox Streaming App • Version 8.1.4 (Official 2026 Build)
+            Free Movies Streaming App • Version 8.1.4 (Official 2026 Build)
           </div>
         </div>
       </div>
@@ -453,6 +477,81 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Android APK Troubleshooting Modal */}
+      {isApkHelpOpen && (
+        <div className="fixed inset-0 z-60 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-[#101322] border border-white/20 rounded-3xl p-5 shadow-2xl max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Download className="w-4 h-4 text-[#00df82]" />
+                <span>Android APK Installation Guide</span>
+              </h3>
+              <button
+                onClick={() => setIsApkHelpOpen(false)}
+                className="text-zinc-400 hover:text-white p-1 rounded-xl hover:bg-white/10 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3.5 pt-3 text-xs text-zinc-300 no-scrollbar">
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 text-amber-200 space-y-1">
+                <div className="font-bold flex items-center gap-1.5 text-xs text-amber-300">
+                  <span>Why it says "APK is forbidden"</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-amber-200/90">
+                  When downloading directly from GitHub Actions artifacts without being logged in, GitHub blocks the link with a <strong>403 Forbidden</strong> error. Also, GitHub packages artifacts as <strong>.ZIP</strong> files, which Android cannot install directly without unzipping.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-bold text-white text-xs">How to Fix and Install:</h4>
+                
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-1.5">
+                  <div className="font-semibold text-[#00df82] flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-[#00df82]/20 flex items-center justify-center text-[10px]">1</span>
+                    <span>Extract the .ZIP file first</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">
+                    If you downloaded <code>FreeMovies-Android-APK.zip</code>, open your phone's <strong>Files</strong> or <strong>My Files</strong> app, tap the zip file, and choose <strong>Extract</strong>. Tap the extracted <code>FreeMovies.apk</code> to install.
+                  </p>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-1.5">
+                  <div className="font-semibold text-[#00df82] flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-[#00df82]/20 flex items-center justify-center text-[10px]">2</span>
+                    <span>Enable "Install Unknown Apps"</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">
+                    When opening the APK, if Android says <em>"Your phone is not allowed to install unknown apps"</em>, tap <strong>Settings</strong> and turn ON <strong>"Allow from this source"</strong>.
+                  </p>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-1.5">
+                  <div className="font-semibold text-[#00df82] flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-[#00df82]/20 flex items-center justify-center text-[10px]">3</span>
+                    <span>Google Play Protect</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">
+                    If Play Protect shows a warning, tap <strong>More details</strong> and then tap <strong>Install anyway</strong>.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsApkHelpOpen(false);
+                  showToast('Instructions reviewed');
+                }}
+                className="w-full py-2.5 bg-[#00df82] hover:bg-[#00c975] text-black font-bold rounded-xl text-center cursor-pointer transition text-xs mt-2"
+              >
+                Got It
+              </button>
             </div>
           </div>
         </div>

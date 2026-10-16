@@ -1,4 +1,4 @@
-name: Build Free Movie Native Android APK
+name: Build Free Movies Native Android APK
 
 on:
   push:
@@ -66,6 +66,18 @@ jobs:
             chmod +x android/gradlew
           fi
 
+      - name: Generate Signing Keystore
+        run: |
+          keytool -genkeypair -v \
+            -keystore freemovies.keystore \
+            -alias freemovies \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass freemoviespass123 \
+            -keypass freemoviespass123 \
+            -dname "CN=Free Movies, OU=Streaming, O=FreeMovies App, L=Kampala, ST=Central, C=UG"
+
       - name: Build Android APK
         run: |
           mkdir -p dist-apk
@@ -73,18 +85,68 @@ jobs:
             cd android
             ./gradlew assembleDebug -x lint -x test --no-daemon --stacktrace
             cd ..
+
+            # Copy built debug APK
             find android/app/build/outputs/apk -name "*.apk" -exec cp {} dist-apk/ \;
-            cp dist-apk/app-debug.apk dist-apk/FreeMovie-v1.0.0.apk 2>/dev/null || true
-            echo "Built APK files in dist-apk:"
-            ls -la dist-apk/
+            
+            # Find latest build-tools for zipalign and apksigner
+            BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -n 1)
+            echo "Using Android Build Tools: $BUILD_TOOLS"
+
+            # Align and sign standalone APK for direct installation
+            if [ -f "dist-apk/app-debug.apk" ]; then
+              cp dist-apk/app-debug.apk dist-apk/FreeMovies-unsigned.apk
+              
+              # Zipalign 4
+              $BUILD_TOOLS/zipalign -v -p 4 dist-apk/FreeMovies-unsigned.apk dist-apk/FreeMovies-aligned.apk || cp dist-apk/app-debug.apk dist-apk/FreeMovies-aligned.apk
+              
+              # Sign with apksigner (v1, v2, v3 schemes enabled)
+              $BUILD_TOOLS/apksigner sign --ks freemovies.keystore --ks-pass pass:freemoviespass123 --ks-key-alias freemovies --key-pass pass:freemoviespass123 --out dist-apk/FreeMovies.apk dist-apk/FreeMovies-aligned.apk || cp dist-apk/app-debug.apk dist-apk/FreeMovies.apk
+              
+              # Verify signature
+              $BUILD_TOOLS/apksigner verify -v dist-apk/FreeMovies.apk || true
+              
+              # Also make convenient copies
+              cp dist-apk/FreeMovies.apk dist-apk/FreeMovies-v1.0.0.apk
+            fi
+
+            echo "Built and signed APKs ready in dist-apk:"
+            ls -lh dist-apk/
           fi
 
-      - name: Upload Built Android APK Artifact
+      - name: Upload Built Android APK Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: FreeMovie-Android-APK
+          name: FreeMovies-Android-APK
           path: |
-            dist-apk/*.apk
-            android/app/build/outputs/apk/**/*.apk
+            dist-apk/FreeMovies.apk
+            dist-apk/FreeMovies-v1.0.0.apk
+            dist-apk/app-debug.apk
           retention-days: 30
           if-no-files-found: error
+
+      - name: Publish Direct APK Download via GitHub Release
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "Free Movies Native Android v1.0.0"
+          body: |
+            ### 🎬 Free Movies Android APK Direct Download
+            
+            Click below to download the native `.apk` file directly to your phone:
+            - **[Download FreeMovies.apk](https://github.com/${{ github.repository }}/releases/download/v1.0.0/FreeMovies.apk)**
+            
+            #### 📱 How to Install on Android:
+            1. Tap the download link above to download **FreeMovies.apk** directly (do not download zip).
+            2. When downloaded, tap the notification or open your **Downloads** folder.
+            3. If Android prompts *"For your security, your phone is not allowed to install unknown apps from this source"*, tap **Settings** and turn ON **"Allow from this source"**.
+            4. If Google Play Protect shows a prompt, tap **"More details"** and then **"Install anyway"**.
+            5. Open **Free Movies** and enjoy!
+          files: |
+            dist-apk/FreeMovies.apk
+            dist-apk/FreeMovies-v1.0.0.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

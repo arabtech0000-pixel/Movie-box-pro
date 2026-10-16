@@ -14,9 +14,9 @@ export default defineConfig(() => {
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
           id: '/',
-          name: 'MovieBox Pro Application',
-          short_name: 'MovieBox',
-          description: 'Official MovieBox Pro native streaming app with offline support, trailers, ShortTV, and peer transfer.',
+          name: 'Free Movies - Box of Movies and TV shows',
+          short_name: 'Free Movies',
+          description: 'Free Movies - Box of Movies and TV shows with native player, trailers, and offline downloads.',
           theme_color: '#090a0f',
           background_color: '#090a0f',
           display: 'standalone',

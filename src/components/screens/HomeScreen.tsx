@@ -541,19 +541,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
           <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar pb-1.5">
             {UGANDAN_VJS.map((vj) => {
-              const isSelected = selectedVj?.id === vj.id;
               return (
                 <button
                   key={vj.id}
                   onClick={() => {
-                    setSelectedVj(vj);
                     setActiveVjModal(vj);
                   }}
-                  className={`flex items-center gap-2.5 px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition active:scale-95 shrink-0 cursor-pointer border shadow-sm ${
-                    isSelected
-                      ? 'bg-[#00df82] text-black font-extrabold border-[#00df82] shadow-lg shadow-emerald-500/25'
-                      : 'bg-[#151724] hover:bg-[#1e2133] text-zinc-200 hover:text-white border-white/10'
-                  }`}
+                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition active:scale-95 shrink-0 cursor-pointer border shadow-sm bg-[#151724] hover:bg-[#1e2133] text-zinc-200 hover:text-white border-white/10"
                 >
                   <img
                     src={vj.avatar}
@@ -562,13 +556,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   />
                   <span className="text-xs font-extrabold">{vj.name}</span>
                   {vj.badge && (
-                    <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded-md font-black ${
-                        isSelected
-                          ? 'bg-black/25 text-black'
-                          : 'bg-white/10 text-[#00df82]'
-                      }`}
-                    >
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-md font-black bg-white/10 text-[#00df82]">
                       {vj.badge}
                     </span>
                   )}
@@ -577,60 +565,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             })}
           </div>
         </div>
-
-        {/* Selected VJ Spotlight Card */}
-        {selectedVj && (
-          <div className="mx-3.5 my-2 p-3 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-[#141726] to-[#0c0d16] border border-[#00df82]/30 flex items-center justify-between gap-3 animate-in fade-in duration-200 shadow-xl">
-            <div
-              onClick={() => setActiveVjModal(selectedVj)}
-              className="flex items-center gap-3 min-w-0 cursor-pointer flex-1"
-            >
-              <img
-                src={selectedVj.avatar}
-                alt={selectedVj.name}
-                className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-[#00df82] shadow-md shadow-emerald-500/20"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <h3 className="text-xs font-black text-white truncate">{selectedVj.fullName}</h3>
-                  <span className="text-[9px] bg-[#00df82]/20 text-[#00df82] px-1.5 py-0.2 rounded font-bold shrink-0">
-                    Luganda Dub
-                  </span>
-                </div>
-                <p className="text-[10px] text-zinc-400 truncate mt-0.5">{selectedVj.tagline}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setActiveVjModal(selectedVj)}
-                className="px-2.5 py-1 rounded-lg bg-[#00df82] hover:bg-[#00c975] text-black font-extrabold text-[10px] shadow transition active:scale-95 cursor-pointer shrink-0"
-              >
-                View All
-              </button>
-              <button
-                onClick={() => setSelectedVj(null)}
-                className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-zinc-400 hover:text-white flex items-center justify-center text-xs shrink-0 cursor-pointer"
-                title="Close"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Selected VJ Translated Releases Shelf */}
-        {selectedVj && (
-          <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-            <MovieShelf
-              title={`${selectedVj.name} Luganda Translated Movies`}
-              icon={<Flame className="w-4 h-4 text-[#00df82]" />}
-              items={trendingMovies.length > 0 ? trendingMovies.slice(0, 10) : allItems.slice(0, 10)}
-              onOpenItem={onOpenItem}
-              onDownloadItem={(item) => onDownloadItem(item)}
-              badge="Luganda Dub"
-            />
-          </div>
-        )}
 
         {/* CONTENT BELOW THE BANNER */}
         {activeCategory !== 'Trending' ? (
