@@ -148,7 +148,7 @@ export const AdBannerCard: React.FC<AdBannerCardProps> = ({
     lowerLink === '#movies' ||
     currentBanner.badgeText?.toUpperCase().includes('MOVIE');
 
-  const slideVariants = {
+  const slideVariants: any = {
     initial: (dir: number) => ({
       opacity: 0,
       x: dir > 0 ? 30 : -30,

@@ -182,7 +182,7 @@ export const ShortPlayerModal: React.FC<ShortPlayerModalProps> = ({
                   type: 'tv',
                   category: 'ShortTV',
                   genres: [item.category],
-                  synopsis: item.description,
+                  synopsis: item.synopsis || '',
                   fileSize: '45.2 MB',
                 });
               }}

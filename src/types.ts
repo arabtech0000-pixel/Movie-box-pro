@@ -147,6 +147,7 @@ export interface MediaItem {
   isTrending?: boolean;
   isPopular?: boolean;
   videoUrl?: string;
+  videoName?: string;
   fileSize?: string;
   status?: string;
   budget?: number;
@@ -166,6 +167,7 @@ export interface MediaItem {
   seasons?: TmdbSeason[];
   similar?: MediaItem[];
   recommendations?: MediaItem[];
+  vjName?: string;
 }
 
 

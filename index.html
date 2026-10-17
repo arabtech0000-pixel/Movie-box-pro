@@ -43,12 +43,13 @@
           e.stopImmediatePropagation();
           e.preventDefault();
         }
-      });
+      }, true);
       window.addEventListener('unhandledrejection', function(e) {
-        if (e && e.reason && String(e.reason).includes("reading 'send'")) {
+        if (e && (String(e.reason).includes("reading 'send'") || String(e.reason).includes('WebSocket'))) {
+          e.stopImmediatePropagation();
           e.preventDefault();
         }
-      });
+      }, true);
     </script>
   </head>
   <body class="bg-[#090a0f] text-white antialiased selection:bg-emerald-500 selection:text-black overflow-x-hidden">

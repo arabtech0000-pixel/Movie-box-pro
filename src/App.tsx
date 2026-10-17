@@ -55,7 +55,16 @@ const INITIAL_USER: UserProfile = {
   myListCount: 0,
 };
 
+const ALL_MEDIA_ITEMS: MediaItem[] = [
+  ...HERO_CAROUSEL_ITEMS,
+  ...BECAUSE_WATCHED_SHELF,
+  ...POPULAR_SERIES_SHELF,
+  ...COMING_SOON_SHELF,
+  ...TRENDING_FREE_DOWNLOADS,
+];
+
 export default function App() {
+  const allMediaItems = ALL_MEDIA_ITEMS;
   const [showSplash, setShowSplash] = useState<boolean>(true);
   const [isAdminScreenOpen, setIsAdminScreenOpen] = useState(false);
   // User Profile with persistent session retrieval
@@ -74,8 +83,19 @@ export default function App() {
     return INITIAL_USER;
   });
 
-  // The app opens directly to Home page after splash screen
-  const [showGetStarted, setShowGetStarted] = useState<boolean>(false);
+  const [showGetStarted, setShowGetStarted] = useState<boolean>(() => {
+    if (localStorage.getItem('mb_user_logged_out') === 'true') {
+      return true;
+    }
+    const alreadyCompleted =
+      localStorage.getItem('mb_account_created') === 'true' ||
+      localStorage.getItem('mb_get_started_seen') === 'true';
+    if (alreadyCompleted) {
+      return false;
+    }
+    // New install gets the custom Get Started screen
+    return true;
+  });
   const [showSignUpPage, setShowSignUpPage] = useState<boolean>(false);
   const [signUpInitialMode, setSignUpInitialMode] = useState<'signup' | 'signin'>('signup');
 
@@ -229,6 +249,47 @@ export default function App() {
     };
   }, []);
 
+  // Handle URL deep routes e.g. /movie/:id/play, /series/:series_code, /movie/:id, /dashboard
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (!path || path === '/') return;
+
+    if (path.startsWith('/dashboard')) {
+      setCurrentTab('me');
+      return;
+    }
+
+    const moviePlayMatch = path.match(/^\/movie\/([^/]+)\/play/);
+    if (moviePlayMatch) {
+      const id = moviePlayMatch[1];
+      const found = allMediaItems.find((m) => m.id === id || m.id.endsWith(id));
+      if (found) {
+        setPlayingMedia({ item: found });
+      }
+      return;
+    }
+
+    const movieMatch = path.match(/^\/movie\/([^/]+)/);
+    if (movieMatch) {
+      const id = movieMatch[1];
+      const found = allMediaItems.find((m) => m.id === id || m.id.endsWith(id));
+      if (found) {
+        setSelectedMedia(found);
+      }
+      return;
+    }
+
+    const seriesMatch = path.match(/^\/series\/([^/]+)/);
+    if (seriesMatch) {
+      const code = seriesMatch[1];
+      const found = allMediaItems.find((m) => m.type === 'tv' && (m.id === code || m.title.toLowerCase().includes(code.toLowerCase())));
+      if (found) {
+        setSelectedMedia(found);
+      }
+      return;
+    }
+  }, [allMediaItems]);
+
   // 2. Listen to Firebase Realtime Database connection status
   useEffect(() => {
     const unsubscribe = subscribeToConnectionStatus((connected) => {
@@ -314,14 +375,7 @@ export default function App() {
     localStorage.setItem('mb_bookmarks', JSON.stringify(bookmarks));
   }, [bookmarks]);
 
-  // Aggregate all items for search lookup
-  const allMediaItems: MediaItem[] = [
-    ...HERO_CAROUSEL_ITEMS,
-    ...BECAUSE_WATCHED_SHELF,
-    ...POPULAR_SERIES_SHELF,
-    ...COMING_SOON_SHELF,
-    ...TRENDING_FREE_DOWNLOADS,
-  ];
+
 
   // Handlers with Realtime Database synchronization & Guest Protection
   const requireAuth = (actionLabel: string = 'watch and stream'): boolean => {
@@ -430,6 +484,7 @@ export default function App() {
     localStorage.removeItem('mb_account_created');
     localStorage.removeItem('mb_get_started_seen');
     localStorage.removeItem('mb_admin_unlocked');
+    localStorage.setItem('mb_user_logged_out', 'true');
     setUser(INITIAL_USER);
     setShowGetStarted(true);
     setShowSignUpPage(false);
@@ -469,6 +524,7 @@ export default function App() {
             onExploreGuest={() => {
               setShowGetStarted(false);
               setShowSignUpPage(false);
+              localStorage.removeItem('mb_user_logged_out');
               localStorage.setItem('mb_account_created', 'true');
               localStorage.setItem('mb_get_started_seen', 'true');
             }}
@@ -484,6 +540,7 @@ export default function App() {
               setUser((prev) => ({ ...prev, ...profile, isLoggedIn: true }));
               setShowSignUpPage(false);
               setShowGetStarted(false);
+              localStorage.removeItem('mb_user_logged_out');
               localStorage.setItem('mb_account_created', 'true');
               localStorage.setItem('mb_get_started_seen', 'true');
               showToast(`Welcome ${profile.username || 'MovieFan'}!`);
@@ -491,6 +548,7 @@ export default function App() {
             onGuestContinue={() => {
               setShowSignUpPage(false);
               setShowGetStarted(false);
+              localStorage.removeItem('mb_user_logged_out');
               localStorage.setItem('mb_account_created', 'true');
               localStorage.setItem('mb_get_started_seen', 'true');
             }}

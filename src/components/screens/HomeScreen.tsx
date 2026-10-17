@@ -42,6 +42,7 @@ import {
   getKoreanDramas,
   getMediaByGenre,
 } from '../../services/tmdb';
+import { MUMO_SERVER_MOVIES } from '../../services/mumoServer';
 
 interface HomeScreenProps {
   onOpenItem: (item: MediaItem) => void;
@@ -88,28 +89,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [selectedVj, setSelectedVj] = useState<UgandanVJ | null>(null);
   const [activeVjModal, setActiveVjModal] = useState<UgandanVJ | null>(null);
 
-  // Dynamic TMDB data states for expanded movie categories
-  const [heroItems, setHeroItems] = useState<MediaItem[]>([]);
-  const [trendingMovies, setTrendingMovies] = useState<MediaItem[]>([]);
-  const [topRatedMovies, setTopRatedMovies] = useState<MediaItem[]>([]);
-  const [nowPlaying, setNowPlaying] = useState<MediaItem[]>([]);
-  const [popularSeries, setPopularSeries] = useState<MediaItem[]>([]);
-  const [actionMovies, setActionMovies] = useState<MediaItem[]>([]);
-  const [sciFiMovies, setSciFiMovies] = useState<MediaItem[]>([]);
-  const [animationMovies, setAnimationMovies] = useState<MediaItem[]>([]);
-  const [thrillerMovies, setThrillerMovies] = useState<MediaItem[]>([]);
-  const [comedyMovies, setComedyMovies] = useState<MediaItem[]>([]);
-  const [horrorMovies, setHorrorMovies] = useState<MediaItem[]>([]);
-  const [romanceMovies, setRomanceMovies] = useState<MediaItem[]>([]);
-  const [adventureMovies, setAdventureMovies] = useState<MediaItem[]>([]);
-  const [crimeMovies, setCrimeMovies] = useState<MediaItem[]>([]);
-  const [mysteryMovies, setMysteryMovies] = useState<MediaItem[]>([]);
-  const [familyMovies, setFamilyMovies] = useState<MediaItem[]>([]);
-  const [koreanMedia, setKoreanMedia] = useState<MediaItem[]>([]);
-  const [upcomingMovies, setUpcomingMovies] = useState<MediaItem[]>([]);
+  // Dynamic catalog states for movies, series, and hero banners populated from MumoWatch server
+  const [heroItems, setHeroItems] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.slice(0, 8));
+  const [trendingMovies, setTrendingMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.type !== 'tv'));
+  const [topRatedMovies, setTopRatedMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => (m.rating || 0) >= 8));
+  const [nowPlaying, setNowPlaying] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.year === 2024 || m.year === 2023));
+  const [popularSeries, setPopularSeries] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.type === 'tv'));
+  const [actionMovies, setActionMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Action')));
+  const [sciFiMovies, setSciFiMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Sci-Fi')));
+  const [animationMovies, setAnimationMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Animation')));
+  const [thrillerMovies, setThrillerMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Thriller')));
+  const [comedyMovies, setComedyMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Comedy')));
+  const [horrorMovies, setHorrorMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Horror') || m.genres?.includes('Thriller')));
+  const [romanceMovies, setRomanceMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Romance') || m.genres?.includes('Drama')));
+  const [adventureMovies, setAdventureMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Adventure')));
+  const [crimeMovies, setCrimeMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Crime')));
+  const [mysteryMovies, setMysteryMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Mystery') || m.genres?.includes('Crime')));
+  const [familyMovies, setFamilyMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('Family') || m.genres?.includes('Animation')));
+  const [koreanMedia, setKoreanMedia] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.filter((m) => m.genres?.includes('K-Drama') || m.type === 'tv'));
+  const [upcomingMovies, setUpcomingMovies] = useState<MediaItem[]>(() => MUMO_SERVER_MOVIES.slice(4, 12));
   const [categoryItems, setCategoryItems] = useState<MediaItem[]>([]);
 
-  const [isLoadingHome, setIsLoadingHome] = useState(true);
+  const [isLoadingHome, setIsLoadingHome] = useState(false);
   const [isLoadingCategory, setIsLoadingCategory] = useState(false);
 
   // Real-time Ad Banners state
@@ -282,12 +283,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         }
 
         if (isMounted) {
-          setCategoryItems(results);
+          setCategoryItems(results.length > 0 ? results : MUMO_SERVER_MOVIES);
           setIsLoadingCategory(false);
         }
       } catch (err) {
         console.warn('Category fetch error:', err);
-        if (isMounted) setIsLoadingCategory(false);
+        if (isMounted) {
+          setCategoryItems(MUMO_SERVER_MOVIES);
+          setIsLoadingCategory(false);
+        }
       }
     }
 
@@ -879,6 +883,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* Download Options Cut-in Sheet */}
       {downloadCutInItem && (
         <DownloadCutInSheet
+          isOpen={true}
           item={downloadCutInItem}
           onClose={() => setDownloadCutInItem(null)}
           onConfirmDownload={(options) => {

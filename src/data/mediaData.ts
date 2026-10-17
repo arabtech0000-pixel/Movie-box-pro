@@ -1,27 +1,31 @@
 import { MediaItem, ShortDramaItem } from '../types';
+import { MUMO_SERVER_MOVIES } from '../services/mumoServer';
 
-// All catalog items are fetched dynamically from the live streaming service.
-export const HERO_CAROUSEL_ITEMS: MediaItem[] = [];
-export const BECAUSE_WATCHED_SHELF: MediaItem[] = [];
-export const POPULAR_SERIES_SHELF: MediaItem[] = [];
-export const COMING_SOON_SHELF: MediaItem[] = [];
-export const TRENDING_FREE_DOWNLOADS: MediaItem[] = [];
+export { MUMO_SERVER_MOVIES };
+
+export const HERO_CAROUSEL_ITEMS: MediaItem[] = MUMO_SERVER_MOVIES.filter((m) => m.type !== 'tv').slice(0, 8);
+export const BECAUSE_WATCHED_SHELF: MediaItem[] = MUMO_SERVER_MOVIES.filter((m) => m.type !== 'tv');
+export const POPULAR_SERIES_SHELF: MediaItem[] = MUMO_SERVER_MOVIES.filter((m) => m.type === 'tv');
+export const COMING_SOON_SHELF: MediaItem[] = MUMO_SERVER_MOVIES.filter((m) => m.type !== 'tv').slice(2, 8);
+export const TRENDING_FREE_DOWNLOADS: MediaItem[] = MUMO_SERVER_MOVIES;
 
 export const SHORT_TV_FEATURED: ShortDramaItem | null = null;
 export const SHORT_TV_NEW_ARRIVALS: ShortDramaItem[] = [];
 export const SHORT_TV_TOP_SEARCHES: ShortDramaItem[] = [];
 
 export const SEARCH_SUGGESTIONS = [
-  'Avatar: The Way of Water',
-  'Interstellar',
+  'Deadpool & Wolverine',
+  'John Wick: Chapter 4',
+  'Bad Boys: Ride or Die',
+  'Extraction 2',
   'Dune: Part Two',
-  'Inception',
-  'Breaking Bad',
-  'Stranger Things',
-  'The Dark Knight',
-  'Oppenheimer',
-  'Shōgun',
-  'Squid Game'
+  'Squid Game',
+  'Money Heist',
+  'Avatar: The Way of Water',
+  'The Batman',
+  'Top Gun: Maverick',
+  'The Beekeeper',
+  'Gladiator II',
 ];
 
 export const PREMIUM_PLANS = [

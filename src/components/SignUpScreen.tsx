@@ -23,6 +23,7 @@ import {
 import { getTrendingMedia, getPopularMovies, getPopularTv } from '../services/tmdb';
 
 interface SignUpScreenProps {
+  initialMode?: 'signup' | 'signin';
   onBackToGetStarted?: () => void;
   onAuthSuccess: (profile: Partial<UserProfile>) => void;
   onGuestContinue: () => void;
@@ -101,11 +102,13 @@ export const AVATAR_CATEGORIES: AvatarCategory[] = [
 ];
 
 export const SignUpScreen: React.FC<SignUpScreenProps> = ({
+  initialMode = 'signup',
+  onBackToGetStarted,
   onAuthSuccess,
   onGuestContinue,
 }) => {
   // Creating an account is the default one-time procedure for new installs
-  const [isSignUp, setIsSignUp] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -420,6 +423,24 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
 
       {/* FOREGROUND: Truly Transparent Glass Card Box */}
       <div className="relative z-20 w-full px-4 pb-7 pt-2 pointer-events-auto">
+        {onBackToGetStarted && (
+          <div className="max-w-sm mx-auto mb-2 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={onBackToGetStarted}
+              className="px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white flex items-center gap-1.5 backdrop-blur-md transition cursor-pointer"
+            >
+              ← Back
+            </button>
+            <button
+              type="button"
+              onClick={onGuestContinue}
+              className="text-xs font-medium text-zinc-400 hover:text-[#00df82] transition"
+            >
+              Skip
+            </button>
+          </div>
+        )}
         <div className="max-w-sm mx-auto w-full bg-black/25 backdrop-blur-md border border-white/20 rounded-3xl p-5 shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
           {/* Switcher & Circular Profile Avatar Selector Row */}
           <div className="flex items-center gap-3 mb-4">

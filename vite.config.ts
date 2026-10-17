@@ -9,6 +9,27 @@ export default defineConfig(() => {
     plugins: [
       react(),
       tailwindcss(),
+      {
+        name: 'movie-api-server',
+        configureServer(server) {
+          server.middlewares.use('/api/movies', async (_req, res) => {
+            try {
+              const mod = await server.ssrLoadModule('/src/services/mumoServer.ts');
+              res.setHeader('Content-Type', 'application/json');
+              res.setHeader('Access-Control-Allow-Origin', '*');
+              res.end(JSON.stringify({ status: 'ok', count: mod.MUMO_SERVER_MOVIES.length, data: mod.MUMO_SERVER_MOVIES }));
+            } catch (e: any) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: e.message }));
+            }
+          });
+          server.middlewares.use('/api/status', (_req, res) => {
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.end(JSON.stringify({ status: 'online', server: 'MovieBox Stream Server', timestamp: Date.now() }));
+          });
+        },
+      },
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
@@ -99,8 +120,8 @@ export default defineConfig(() => {
       },
     },
     server: {
-      hmr: false,
-      watch: null,
+      port: 3000,
+      host: '0.0.0.0',
     },
   };
 });
